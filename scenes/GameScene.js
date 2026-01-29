@@ -8,8 +8,12 @@ class GameScene extends Phaser.Scene {
         // World setup
         this.physics.world.setBounds(0, 0, GameConfig.WORLD_WIDTH, GameConfig.CANVAS_HEIGHT);
         
-        // Background
+        // Sky
         this.createBackground();
+        
+        // Background Environment (trees, mountains, clouds, etc)
+        this.background = new BackgroundEnvironment(this);
+        this.background.create();
         
         // Ground
         this.createGround();
@@ -19,8 +23,7 @@ class GameScene extends Phaser.Scene {
         
         // Groups
         this.enemies = this.physics.add.group({
-            classType: Enemy,
-            runChildUpdate: true
+            classType: Enemy
         });
         
         this.pickups = this.physics.add.group({
@@ -72,19 +75,26 @@ class GameScene extends Phaser.Scene {
     }
     
     update(time, delta) {
-        if (!this.player || this.player.isDead) return;
-        
         const dt = delta / 1000;
         
+        // Update background animation
+        if (this.background) {
+            this.background.update(time);
+        }
+        
         // Update player
-        this.player.update(time, delta);
+        if (this.player && !this.player.isDead) {
+            this.player.update(time, delta);
+        }
         
         // Update enemies
         this.enemies.children.entries.forEach(enemy => {
             if (enemy.active) {
-                enemy.update(time, delta, this.player);
+                enemy.update(time, delta);
             }
         });
+        
+        if (!this.player || this.player.isDead) return;
         
         // Update score/distance
         this.distance = Math.floor(this.player.x / 10);
@@ -106,15 +116,16 @@ class GameScene extends Phaser.Scene {
     }
     
     createBackground() {
-        // Sky
+        // Sky rectangle that will change color with day/night
         this.sky = this.add.rectangle(
             GameConfig.WORLD_WIDTH / 2, 
             GameConfig.CANVAS_HEIGHT / 2, 
             GameConfig.WORLD_WIDTH, 
             GameConfig.CANVAS_HEIGHT, 
-            GameConfig.COLORS.SKY_DAY.top
+            0x5a9fd4
         );
         this.sky.setDepth(-100);
+        this.sky.setScrollFactor(0, 0);
     }
     
     createGround() {
@@ -164,6 +175,7 @@ class GameScene extends Phaser.Scene {
                         groundY, 
                         this.difficultyMult
                     );
+                    enemy.player = this.player; // Set player reference
                     this.enemies.add(enemy);
                 }
                 zone.triggered = true;

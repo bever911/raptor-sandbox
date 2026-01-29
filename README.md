@@ -1,138 +1,81 @@
-# 🦕 Dino Survival - Phaser 3
+# Dino Survival - Phaser 3
 
-A pixel-art dinosaur survival game built with Phaser 3.
+A pixel art dinosaur survival game built with Phaser 3.
 
-## 🎮 Features
+## How to Play
 
-- **Survival Mechanics**: Manage hunger, thirst, and health
-- **Combat System**: Melee attacks and ranged weapons (Rapid Fire, Acid Gun, Bone Club)
-- **Enemy AI**: Baby Spinosaurus enemies with patrol, chase, and attack behaviors
-- **Progressive Difficulty**: Enemies get stronger as you progress
-- **Day/Night Cycle**: Beautiful sky transitions
-- **Pickups**: Weapons, armor, meat, and water sources
-- **Score System**: Track distance traveled and enemies defeated
-- **High Score**: Persistent leaderboard using localStorage
+### Controls
 
-## 📁 Project Structure
+**Keyboard:**
+- Arrow Keys / WASD - Move
+- Space - Jump
+- Z - Attack (claw attack or bone club swing)
+- X - Shoot (when you have a gun)
 
+**Touch/Mobile:**
+- D-Pad on left - Movement
+- JUMP button - Jump
+- ATK button - Attack
+- GUN button - Shoot
+
+### Gameplay
+
+You play as a raptor trying to survive in a prehistoric jungle. You must:
+
+1. **Stay Fed** - Collect berries from bushes (restores hunger)
+2. **Stay Hydrated** - Drink from puddles and ponds (restores thirst)
+3. **Fight Enemies** - Defeat spinosaurus enemies that spawn as you explore
+4. **Collect Weapons** - Find powerful weapons to help you survive
+
+### Weapons
+
+- **Rapid Fire Gun** (Blue) - Fast shooting, moderate damage
+- **Acid Spit Gun** (Green) - Slower, higher damage with arc trajectory
+- **Bone Club** (Tan) - Powerful melee weapon, high damage
+
+### Pickups
+
+- **Meat** (Red) - Dropped by enemies, restores hunger significantly
+- **Armor** (Blue Shield) - Reduces damage by 50%, lasts 5 hits
+
+### Survival Tips
+
+- Your health regenerates when both hunger AND thirst are full
+- Ponds provide continuous hydration while standing in them
+- Puddles respawn after 25 seconds
+- Enemies get faster when they spot you
+
+## Running the Game
+
+Simply open `index.html` in a modern web browser. The game loads Phaser 3 from CDN.
+
+For local development, you can use any simple HTTP server:
+
+```bash
+# Python 3
+python -m http.server 8000
+
+# Node.js (with http-server installed)
+npx http-server
 ```
-phaser-dino-survival/
-├── index.html              # Main HTML file
-├── config.js               # Game configuration constants
-├── main.js                 # Phaser initialization
-├── sprites/
-│   └── DinoSprites.js      # Procedural sprite generation
-├── entities/
-│   ├── Player.js           # Player class
-│   ├── Enemy.js            # Enemy class
-│   ├── Pickup.js           # Pickup items
-│   └── Bullet.js           # Projectiles
-└── scenes/
-    ├── BootScene.js        # Asset loading
-    ├── GameScene.js        # Main gameplay
-    ├── UIScene.js          # HUD overlay
-    └── GameOverScene.js    # Game over screen
-```
 
-## 🚀 Local Development
+Then open `http://localhost:8000` in your browser.
 
-1. **Clone or download** this folder
-2. **Start a local server** (required for file loading):
-   ```bash
-   # Python 3
-   python -m http.server 8000
-   
-   # Node.js
-   npx http-server
-   ```
-3. **Open browser** to `http://localhost:8000`
+## Deploying to GitHub Pages
 
-## 🌐 GitHub Pages Deployment
-
-### Option 1: Deploy entire folder
 1. Create a new GitHub repository
-2. Upload all files from `phaser-dino-survival/` to the repository
-3. Go to **Settings** → **Pages**
-4. Set source to **main branch** → **/ (root)**
-5. Save and wait a few minutes
-6. Your game will be live at `https://yourusername.github.io/repository-name/`
+2. Upload the contents of this folder
+3. Go to Settings > Pages
+4. Select "Deploy from a branch" and choose `main` branch
+5. Your game will be live at `https://yourusername.github.io/repository-name/`
 
-### Option 2: Deploy from docs folder
-1. Create a `docs` folder in your repository root
-2. Copy all files from `phaser-dino-survival/` into `docs/`
-3. Go to **Settings** → **Pages**
-4. Set source to **main branch** → **/docs**
-5. Save and your game is live!
+## Technical Details
 
-## 🎯 Controls
+- Built with Phaser 3.60
+- All sprites generated programmatically (no external assets needed)
+- Responsive design works on desktop and mobile
+- Touch controls for mobile play
 
-- **Arrow Keys / WASD**: Move
-- **Space**: Jump
-- **Z**: Melee attack / Use bone club
-- **X**: Shoot weapon (if equipped)
+## Credits
 
-## 🛠️ Customization
-
-### Adjust Difficulty
-Edit `config.js`:
-```javascript
-DIFFICULTY: {
-    SCALE_START: 1000,  // Distance before difficulty increases
-    SCALE_RATE: 0.0002, // How fast difficulty increases
-}
-```
-
-### Change Player Stats
-```javascript
-PLAYER: {
-    MAX_HEALTH: 100,
-    SPEED: 180,
-    JUMP_FORCE: 340,
-    ...
-}
-```
-
-### Modify Day/Night Cycle
-```javascript
-DAY_NIGHT_CYCLE: 120, // seconds for full cycle
-```
-
-## 🎨 Adding Custom Sprites
-
-Replace procedural sprites in `sprites/DinoSprites.js`:
-```javascript
-// Instead of drawing with graphics, load images:
-this.load.image('raptor', 'assets/raptor.png');
-```
-
-## 📝 To-Do / Enhancement Ideas
-
-- [ ] Add more enemy types (Triceratops, Pteranodon)
-- [ ] Power-ups (speed boost, invincibility)
-- [ ] Environmental hazards (tar pits, spike traps)
-- [ ] Sound effects and music
-- [ ] Mobile touch controls
-- [ ] Better sprite animations
-- [ ] Procedurally generated levels
-- [ ] Save game progress
-
-## 🐛 Known Issues
-
-- Sprites are basic (procedurally generated rectangles)
-- No animations yet (static sprites)
-- Could use sound effects
-- Mobile controls need improvement
-
-## 📜 License
-
-Free to use and modify for your own projects!
-
-## 🙏 Credits
-
-Built with:
-- [Phaser 3](https://phaser.io/) - Game framework
-- Pixel art style inspired by retro games
-
----
-
-**Have fun surviving in the dino jungle!** 🦖🌴
+Created as a family game development project.

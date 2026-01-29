@@ -28,14 +28,22 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.retreatTimer = 0;
         this.flashTimer = 0;
         this.isDead = false;
+        this.player = null; // Will be set by GameScene
         
         this.setFlipX(this.patrolDir < 0);
     }
     
-    update(time, delta, player) {
+    update(time, delta) {
         const dt = delta / 1000;
         
-        if (this.isDead) return;
+        if (this.isDead || !this.player) return;
+        
+        const player = this.player;
+        if (!player || player.isDead) {
+            // No player or player is dead - just patrol
+            this.patrol(dt);
+            return;
+        }
         
         // Timers
         if (this.attackCooldown > 0) this.attackCooldown -= dt;
@@ -103,6 +111,19 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     canSeePlayer(player, dx) {
         if (Math.abs(dx) > GameConfig.ENEMY.SIGHT_RANGE) return false;
         return (dx > 0 && !this.flipX) || (dx < 0 && this.flipX);
+    }
+    
+    patrol(dt) {
+        this.state = 'patrol';
+        this.patrolTimer -= dt;
+        
+        if (this.patrolTimer <= 0) {
+            this.patrolDir *= -1;
+            this.patrolTimer = 2 + Math.random() * 2;
+        }
+        
+        this.setFlipX(this.patrolDir < 0);
+        this.setVelocityX(this.patrolDir * this.speed);
     }
     
     attack() {

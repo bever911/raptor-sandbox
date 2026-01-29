@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Dino Survival - Phaser 3</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -13,37 +14,1614 @@
             box-sizing: border-box;
         }
         
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #0a0a12;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Press Start 2P', monospace;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
         
-        canvas {
-            box-shadow: 0 0 40px rgba(0, 50, 0, 0.5);
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #game-canvas {
             image-rendering: pixelated;
             image-rendering: crisp-edges;
+            max-width: 100%;
+            max-height: 70vh;
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30vh;
+            min-height: 150px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: linear-gradient(to top, rgba(10,10,18,0.95), rgba(10,10,18,0.7), transparent);
+        }
+        
+        #dpad {
+            position: relative;
+            width: 130px;
+            height: 130px;
+        }
+        
+        .dpad-btn {
+            position: absolute;
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(145deg, rgba(60,80,60,0.8), rgba(30,50,30,0.9));
+            border: 2px solid rgba(100,140,100,0.5);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(150,200,150,0.8);
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        
+        .dpad-btn:active, .dpad-btn.pressed {
+            background: linear-gradient(145deg, rgba(80,120,80,0.9), rgba(50,80,50,0.95));
+            transform: scale(0.95);
+        }
+        
+        #dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
+        #dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
+        #dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
+        #dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+        
+        #action-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .action-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 3px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+            cursor: pointer;
+        }
+        
+        .action-btn:active, .action-btn.pressed {
+            transform: scale(0.92);
+        }
+        
+        #btn-jump {
+            background: linear-gradient(145deg, #4a8f4a, #2d6a2d);
+            border-color: #6ab86a;
+            margin-bottom: 25px;
+        }
+        
+        #btn-attack {
+            background: linear-gradient(145deg, #a84a4a, #7a2d2d);
+            border-color: #c86a6a;
+        }
+        
+        #btn-shoot {
+            background: linear-gradient(145deg, #4a6a8f, #2d4a6a);
+            border-color: #6a8ab8;
+        }
+        
+        #keyboard-hint {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(150,200,150,0.4);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+        }
+        
+        @media (pointer: coarse) {
+            #keyboard-hint { display: none; }
+        }
+        
+        @media (pointer: fine) {
+            #controls { opacity: 0.4; }
+            #controls:hover { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <!-- Phaser 3 from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <div id="game-container">
+        <div id="keyboard-hint">ARROWS: Move • SPACE: Jump • Z: Attack • X: Shoot</div>
+    </div>
     
-    <!-- Game Scripts -->
-    <script src="config.js"></script>
-    <script src="sprites/DinoSprites.js"></script>
-    <script src="entities/Player.js"></script>
-    <script src="entities/Enemy.js"></script>
-    <script src="entities/Pickup.js"></script>
-    <script src="entities/Bullet.js"></script>
-    <script src="scenes/BootScene.js"></script>
-    <script src="scenes/GameScene.js"></script>
-    <script src="scenes/UIScene.js"></script>
-    <script src="scenes/GameOverScene.js"></script>
-    <script src="main.js"></script>
+    <div id="controls">
+        <div id="dpad">
+            <button class="dpad-btn" id="dpad-up">▲</button>
+            <button class="dpad-btn" id="dpad-down">▼</button>
+            <button class="dpad-btn" id="dpad-left">◀</button>
+            <button class="dpad-btn" id="dpad-right">▶</button>
+        </div>
+        <div id="action-buttons">
+            <button class="action-btn" id="btn-shoot">GUN</button>
+            <button class="action-btn" id="btn-attack">ATK</button>
+            <button class="action-btn" id="btn-jump">JUMP</button>
+        </div>
+    </div>
+
+<script>
+// ============================================================
+// GAME CONFIGURATION
+// ============================================================
+const CONFIG = {
+    WIDTH: 480,
+    HEIGHT: 270,
+    LEVEL_WIDTH: 3000,
+    GROUND_Y: 220,
+    
+    // Player
+    PLAYER_SCALE: 1.4,
+    PLAYER_SPEED: 160,
+    PLAYER_SPEED_SLOW: 90,
+    JUMP_VELOCITY: -320,
+    
+    // Stats
+    MAX_HEALTH: 100,
+    MAX_HUNGER: 100,
+    MAX_THIRST: 100,
+    HUNGER_DRAIN: 1.5,
+    THIRST_DRAIN: 2.0,
+    STARVATION_DMG: 3,
+    DEHYDRATION_DMG: 4,
+    HP_REGEN: 5,
+    
+    // Combat
+    PLAYER_DAMAGE: 25,
+    BONE_CLUB_DAMAGE: 50,
+    RAPID_DAMAGE: 12,
+    ACID_DAMAGE: 25,
+    
+    ENEMY_HEALTH: 60,
+    ENEMY_DAMAGE: 15,
+    ENEMY_SPEED: 70,
+    ENEMY_CHASE_SPEED: 120,
+    ENEMY_SIGHT: 180,
+    ENEMY_ATTACK_RANGE: 35,
+    
+    // Weapons
+    BULLET_SPEED: 350,
+    RAPID_FIRE_RATE: 120,
+    ACID_FIRE_RATE: 500,
+    
+    // Pickups
+    MEAT_RESTORE: 35,
+    BERRY_RESTORE: 15,
+    PUDDLE_RESTORE: 25,
+    POND_RESTORE_RATE: 40
+};
+
+// ============================================================
+// COLOR PALETTES
+// ============================================================
+const COLORS = {
+    sky: { top: 0x5a9fd4, mid: 0x8ec5e8, bottom: 0xb8ddf0 },
+    ground: { grass: 0x4a9a3a, dirt: 0x6a5040, stone: 0x6a6a6a },
+    water: { deep: 0x2a5a8a, mid: 0x4a8aba, surface: 0x8acaea },
+    
+    raptor: {
+        body: 0x3d6a4d,
+        bodyLight: 0x4d8a5d,
+        belly: 0xaa9a6a,
+        stripe: 0x1a3a2a,
+        eye: 0xffaa00,
+        claw: 0x2a2a2a
+    },
+    
+    spino: {
+        body: 0x4a6070,
+        bodyLight: 0x5a7888,
+        sail: 0xaa5a3a,
+        sailLight: 0xca7a4a,
+        belly: 0x9a9a8a,
+        eye: 0xff6600
+    }
+};
+
+// ============================================================
+// BOOT SCENE - Generate textures
+// ============================================================
+class BootScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'BootScene' });
+    }
+    
+    create() {
+        this.createRaptorTexture();
+        this.createSpinoTexture();
+        this.createBulletTextures();
+        this.createPickupTextures();
+        this.createGroundTexture();
+        this.scene.start('GameScene');
+    }
+    
+    createRaptorTexture() {
+        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        const w = 48, h = 52;
+        
+        // Tail
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(2, 22, 8, 10);
+        g.fillRect(-1, 20, 6, 8);
+        g.fillRect(-4, 21, 5, 5);
+        
+        // Body
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(10, 24, 26, 16);
+        g.fillStyle(COLORS.raptor.bodyLight);
+        g.fillRect(12, 26, 22, 12);
+        g.fillRect(14, 18, 22, 10);
+        
+        // Stripes
+        g.fillStyle(COLORS.raptor.stripe);
+        g.fillRect(16, 28, 4, 8);
+        g.fillRect(24, 26, 4, 10);
+        g.fillRect(32, 24, 3, 8);
+        
+        // Belly
+        g.fillStyle(COLORS.raptor.belly);
+        g.fillRect(16, 34, 16, 6);
+        
+        // Legs
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(10, 34, 10, 8);
+        g.fillRect(8, 40, 8, 10);
+        g.fillRect(28, 34, 8, 6);
+        g.fillRect(30, 38, 6, 10);
+        
+        // Feet
+        g.fillStyle(COLORS.raptor.claw);
+        g.fillRect(6, 48, 12, 4);
+        g.fillRect(28, 46, 10, 4);
+        
+        // Neck
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(32, 12, 10, 14);
+        g.fillStyle(COLORS.raptor.bodyLight);
+        g.fillRect(34, 14, 6, 10);
+        
+        // Head
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(34, 4, 16, 14);
+        g.fillStyle(COLORS.raptor.bodyLight);
+        g.fillRect(36, 6, 12, 10);
+        g.fillRect(46, 8, 8, 8);
+        
+        // Eye
+        g.fillStyle(0x000000);
+        g.fillRect(38, 4, 8, 8);
+        g.fillStyle(COLORS.raptor.eye);
+        g.fillRect(40, 6, 4, 4);
+        g.fillStyle(0x000000);
+        g.fillRect(42, 6, 2, 4);
+        g.fillStyle(0xffffff);
+        g.fillRect(40, 6, 1, 1);
+        
+        // Teeth
+        g.fillStyle(0xf0f0e0);
+        g.fillRect(49, 12, 2, 3);
+        g.fillRect(52, 12, 2, 2);
+        
+        // Arms
+        g.fillStyle(COLORS.raptor.body);
+        g.fillRect(32, 24, 6, 5);
+        g.fillRect(36, 22, 8, 4);
+        g.fillStyle(COLORS.raptor.claw);
+        g.fillRect(44, 20, 4, 3);
+        g.fillRect(44, 24, 4, 3);
+        
+        g.generateTexture('raptor', w + 10, h + 4);
+        g.destroy();
+    }
+    
+    createSpinoTexture() {
+        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        const w = 60, h = 56;
+        
+        // Tail
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(0, 30, 10, 6);
+        g.fillRect(8, 28, 8, 8);
+        
+        // Body
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(14, 30, 24, 14);
+        g.fillStyle(COLORS.spino.bodyLight);
+        g.fillRect(16, 32, 20, 10);
+        g.fillRect(18, 24, 20, 10);
+        
+        // Belly
+        g.fillStyle(COLORS.spino.belly);
+        g.fillRect(20, 38, 14, 5);
+        
+        // Sail spines
+        g.fillStyle(0x6a2a1a);
+        for (let i = 0; i < 6; i++) {
+            const sh = 12 + Math.sin(i * 0.8) * 4;
+            g.fillRect(18 + i * 4, 14 - sh, 2, sh);
+        }
+        
+        // Sail membrane
+        g.fillStyle(COLORS.spino.sail);
+        g.fillRect(18, 8, 24, 14);
+        g.fillStyle(COLORS.spino.sailLight);
+        g.fillRect(20, 10, 20, 10);
+        g.fillStyle(0x8a3a2a);
+        g.fillRect(22, 12, 2, 6);
+        g.fillRect(28, 10, 2, 8);
+        
+        // Legs
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(16, 38, 8, 7);
+        g.fillRect(14, 44, 7, 10);
+        g.fillRect(32, 38, 6, 5);
+        g.fillRect(33, 42, 5, 10);
+        
+        // Feet
+        g.fillStyle(0x2a2a2a);
+        g.fillRect(12, 52, 10, 4);
+        g.fillRect(31, 50, 8, 4);
+        
+        // Neck
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(36, 22, 8, 14);
+        
+        // Head
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(40, 18, 12, 10);
+        g.fillStyle(COLORS.spino.bodyLight);
+        g.fillRect(42, 20, 8, 6);
+        g.fillRect(50, 20, 12, 6);
+        
+        // Jaw
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(48, 26, 14, 4);
+        
+        // Eye
+        g.fillStyle(0x000000);
+        g.fillRect(42, 18, 6, 6);
+        g.fillStyle(COLORS.spino.eye);
+        g.fillRect(43, 19, 4, 4);
+        g.fillStyle(0x000000);
+        g.fillRect(45, 19, 2, 4);
+        g.fillStyle(0xffffff);
+        g.fillRect(43, 19, 1, 1);
+        
+        // Teeth
+        g.fillStyle(0xf0f0e0);
+        g.fillRect(52, 26, 2, 3);
+        g.fillRect(56, 26, 2, 2);
+        
+        // Arms
+        g.fillStyle(COLORS.spino.body);
+        g.fillRect(36, 32, 4, 4);
+        g.fillRect(39, 31, 5, 3);
+        
+        g.generateTexture('spino', w + 4, h);
+        g.destroy();
+    }
+    
+    createBulletTextures() {
+        // Rapid fire bullet
+        let g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0xff8800);
+        g.fillCircle(4, 4, 4);
+        g.fillStyle(0xffcc00);
+        g.fillCircle(4, 4, 2);
+        g.generateTexture('bullet_rapid', 8, 8);
+        g.destroy();
+        
+        // Acid blob
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x2a8a2a);
+        g.fillCircle(6, 6, 6);
+        g.fillStyle(0x4afa4a);
+        g.fillCircle(6, 6, 4);
+        g.fillStyle(0x8afa8a);
+        g.fillCircle(5, 5, 2);
+        g.generateTexture('bullet_acid', 12, 12);
+        g.destroy();
+    }
+    
+    createPickupTextures() {
+        let g;
+        
+        // Meat
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x8a3a3a);
+        g.fillRect(4, 6, 16, 12);
+        g.fillStyle(0xaa5a5a);
+        g.fillRect(6, 8, 12, 8);
+        g.fillStyle(0xffffff);
+        g.fillRect(8, 10, 4, 4);
+        g.fillStyle(0xe0e0d0);
+        g.fillRect(2, 8, 4, 6);
+        g.fillRect(18, 8, 4, 6);
+        g.generateTexture('pickup_meat', 24, 24);
+        g.destroy();
+        
+        // Rapid fire gun
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x3a5a7a);
+        g.fillRect(2, 8, 28, 10);
+        g.fillStyle(0x5a7a9a);
+        g.fillRect(4, 9, 24, 8);
+        g.fillStyle(0x8abadf);
+        g.fillRect(6, 11, 8, 4);
+        g.fillStyle(0xffa500);
+        g.fillRect(26, 10, 4, 6);
+        g.generateTexture('pickup_rapidfire', 32, 26);
+        g.destroy();
+        
+        // Acid gun
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x2a5a2a);
+        g.fillRect(2, 7, 28, 12);
+        g.fillStyle(0x4a8a4a);
+        g.fillRect(4, 8, 24, 10);
+        g.fillStyle(0x8afa8a);
+        g.fillRect(8, 10, 10, 6);
+        g.fillStyle(0x4afa4a);
+        g.fillRect(26, 10, 4, 8);
+        g.fillRect(27, 18, 2, 4);
+        g.generateTexture('pickup_acidgun', 32, 26);
+        g.destroy();
+        
+        // Bone club
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x8a7a6a);
+        g.fillRect(10, 14, 8, 18);
+        g.fillStyle(0xd0c8b8);
+        g.fillRect(6, 2, 16, 14);
+        g.fillStyle(0xe8e0d0);
+        g.fillRect(8, 4, 12, 10);
+        g.fillStyle(0xa09080);
+        g.fillRect(7, 3, 4, 5);
+        g.fillRect(17, 3, 4, 5);
+        g.generateTexture('pickup_boneclub', 28, 32);
+        g.destroy();
+        
+        // Armor
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x5070a0);
+        g.fillRect(3, 4, 22, 20);
+        g.fillStyle(0x7090b0);
+        g.fillRect(5, 6, 18, 16);
+        g.fillStyle(0x90b0d0);
+        g.fillRect(7, 8, 14, 12);
+        g.fillStyle(0xb0d0f0);
+        g.fillRect(12, 6, 4, 16);
+        g.fillRect(7, 12, 14, 4);
+        g.generateTexture('pickup_armor', 28, 28);
+        g.destroy();
+        
+        // Berry bush
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x2a5a2a);
+        g.fillCircle(16, 18, 14);
+        g.fillStyle(0x3a7a3a);
+        g.fillCircle(10, 16, 9);
+        g.fillCircle(22, 17, 8);
+        g.fillStyle(0x4a9a4a);
+        g.fillCircle(14, 14, 5);
+        g.fillStyle(0xaa3a5a);
+        g.fillCircle(9, 22, 4);
+        g.fillCircle(19, 23, 4);
+        g.fillCircle(25, 19, 4);
+        g.fillStyle(0xcc5a7a);
+        g.fillCircle(8, 21, 1.5);
+        g.fillCircle(18, 22, 1.5);
+        g.generateTexture('berry_bush', 32, 32);
+        g.destroy();
+        
+        // Water puddle
+        g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0x4a8aba);
+        g.fillEllipse(14, 8, 28, 14);
+        g.fillStyle(0x8acaea);
+        g.fillEllipse(10, 6, 12, 6);
+        g.fillStyle(0xffffff);
+        g.fillRect(6, 5, 3, 2);
+        g.generateTexture('water_puddle', 28, 16);
+        g.destroy();
+    }
+    
+    createGroundTexture() {
+        const g = this.make.graphics({ x: 0, y: 0, add: false });
+        
+        // Grass layer
+        g.fillStyle(0x4a9a3a);
+        g.fillRect(0, 0, 64, 8);
+        g.fillStyle(0x6ada5a);
+        g.fillRect(0, 0, 64, 2);
+        g.fillStyle(0x3a7a2a);
+        g.fillRect(0, 3, 64, 1);
+        
+        // Dirt layer
+        g.fillStyle(0x6a5040);
+        g.fillRect(0, 8, 64, 24);
+        g.fillStyle(0x8a7050);
+        g.fillRect(0, 8, 64, 4);
+        
+        // Stone layer
+        const stoneY = 32;
+        for (let x = 0; x < 64; x += 16) {
+            g.fillStyle(0x6a6a6a);
+            g.fillRect(x, stoneY, 15, 15);
+            g.fillStyle(0x8a8a8a);
+            g.fillRect(x, stoneY, 15, 2);
+            g.fillRect(x, stoneY, 2, 15);
+            g.fillStyle(0x4a4a4a);
+            g.fillRect(x + 13, stoneY + 2, 2, 13);
+            g.fillRect(x + 2, stoneY + 13, 13, 2);
+        }
+        
+        g.generateTexture('ground', 64, 50);
+        g.destroy();
+    }
+}
+
+// ============================================================
+// GAME SCENE - Main gameplay
+// ============================================================
+class GameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameScene' });
+    }
+    
+    create() {
+        // World bounds
+        this.physics.world.setBounds(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.HEIGHT);
+        
+        // Create background
+        this.createBackground();
+        
+        // Create ground
+        this.createGround();
+        
+        // Create resource spawns
+        this.createResources();
+        
+        // Create player
+        this.createPlayer();
+        
+        // Enemy group
+        this.enemies = this.physics.add.group();
+        this.spawnZones = [];
+        for (let x = 400; x < CONFIG.LEVEL_WIDTH - 200; x += 450) {
+            this.spawnZones.push({ x: x, triggered: false });
+        }
+        
+        // Bullets group
+        this.bullets = this.physics.add.group();
+        
+        // Pickups group
+        this.pickups = this.physics.add.group();
+        this.spawnInitialPickups();
+        
+        // Setup camera
+        this.cameras.main.setBounds(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.HEIGHT);
+        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+        
+        // Setup collisions
+        this.setupCollisions();
+        
+        // Setup input
+        this.setupInput();
+        
+        // UI
+        this.createUI();
+        
+        // Game state
+        this.gameOver = false;
+        this.attackTimer = 0;
+        this.shootTimer = 0;
+        this.invulnTimer = 0;
+        
+        // Survival stats
+        this.stats = {
+            health: CONFIG.MAX_HEALTH,
+            hunger: CONFIG.MAX_HUNGER,
+            thirst: CONFIG.MAX_THIRST,
+            weapon: null,
+            ammo: 0,
+            hasArmor: false,
+            armorHits: 0
+        };
+    }
+    
+    createBackground() {
+        // Sky gradient (using colored rectangles)
+        const skyGfx = this.add.graphics();
+        const gradient = skyGfx.createLinearGradient(0, 0, 0, CONFIG.GROUND_Y);
+        
+        skyGfx.fillStyle(COLORS.sky.top);
+        skyGfx.fillRect(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.4);
+        skyGfx.fillStyle(COLORS.sky.mid);
+        skyGfx.fillRect(0, CONFIG.GROUND_Y * 0.4, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.3);
+        skyGfx.fillStyle(COLORS.sky.bottom);
+        skyGfx.fillRect(0, CONFIG.GROUND_Y * 0.7, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.3);
+        skyGfx.setScrollFactor(0);
+        skyGfx.setDepth(-100);
+        
+        // Clouds
+        this.clouds = [];
+        for (let i = 0; i < 12; i++) {
+            const cloud = this.add.graphics();
+            const cx = i * 280 + Phaser.Math.Between(-50, 50);
+            const cy = Phaser.Math.Between(20, 60);
+            const size = Phaser.Math.Between(25, 45);
+            
+            cloud.fillStyle(0xe8f4f8);
+            cloud.fillCircle(0, 0, size * 0.6);
+            cloud.fillCircle(-size * 0.5, 5, size * 0.4);
+            cloud.fillCircle(size * 0.5, 3, size * 0.5);
+            cloud.fillStyle(0xffffff);
+            cloud.fillCircle(-5, -5, size * 0.4);
+            
+            cloud.setPosition(cx, cy);
+            cloud.setScrollFactor(0.1);
+            cloud.setDepth(-90);
+            
+            this.clouds.push({ gfx: cloud, speed: Phaser.Math.Between(3, 8), baseX: cx });
+        }
+        
+        // Mountains
+        this.createMountains();
+        
+        // Jungle silhouettes
+        this.createJungleLayers();
+        
+        // Trees
+        this.createTrees();
+    }
+    
+    createMountains() {
+        const gfx = this.add.graphics();
+        gfx.setScrollFactor(0.1);
+        gfx.setDepth(-80);
+        
+        // Far mountains
+        gfx.fillStyle(0x7a9ab0);
+        for (let i = 0; i < 15; i++) {
+            const mx = i * 220;
+            const mh = 80 + Math.sin(i * 1.5) * 25;
+            gfx.fillTriangle(mx - 150, CONFIG.GROUND_Y, mx, CONFIG.GROUND_Y - mh, mx + 150, CONFIG.GROUND_Y);
+            
+            // Snow cap
+            gfx.fillStyle(0xe8f0f0);
+            gfx.fillTriangle(mx - 12, CONFIG.GROUND_Y - mh + 18, mx, CONFIG.GROUND_Y - mh, mx + 12, CONFIG.GROUND_Y - mh + 18);
+            gfx.fillStyle(0x7a9ab0);
+        }
+    }
+    
+    createJungleLayers() {
+        // Far layer
+        const far = this.add.graphics();
+        far.fillStyle(0x2a5a3a);
+        far.setScrollFactor(0.25);
+        far.setDepth(-70);
+        
+        for (let x = 0; x < CONFIG.LEVEL_WIDTH * 2; x += 30) {
+            const h = 30 + Math.sin(x * 0.05) * 15;
+            far.fillCircle(x, CONFIG.GROUND_Y - h * 0.5, h * 0.45);
+        }
+        
+        // Mid layer
+        const mid = this.add.graphics();
+        mid.fillStyle(0x3a7a4a);
+        mid.setScrollFactor(0.4);
+        mid.setDepth(-60);
+        
+        for (let x = 0; x < CONFIG.LEVEL_WIDTH * 1.5; x += 25) {
+            const h = 25 + Math.sin(x * 0.07) * 12;
+            mid.fillCircle(x, CONFIG.GROUND_Y - h * 0.4, h * 0.4);
+        }
+    }
+    
+    createTrees() {
+        // Background trees
+        for (let i = 0; i < 50; i++) {
+            const tx = i * 70 + Phaser.Math.Between(-20, 20);
+            const treeGfx = this.add.graphics();
+            const height = Phaser.Math.Between(45, 70);
+            const width = Phaser.Math.Between(25, 40);
+            
+            // Trunk
+            treeGfx.fillStyle(0x3a2a1a);
+            treeGfx.fillRect(width * 0.35, height * 0.4, width * 0.3, height * 0.6);
+            treeGfx.fillStyle(0x5a4030);
+            treeGfx.fillRect(width * 0.4, height * 0.45, width * 0.15, height * 0.5);
+            
+            // Foliage
+            treeGfx.fillStyle(0x1a5a2a);
+            treeGfx.fillCircle(width * 0.5, height * 0.3, width * 0.5);
+            treeGfx.fillCircle(width * 0.2, height * 0.35, width * 0.35);
+            treeGfx.fillCircle(width * 0.8, height * 0.33, width * 0.38);
+            
+            treeGfx.fillStyle(0x2a8a3a);
+            treeGfx.fillCircle(width * 0.5, height * 0.25, width * 0.4);
+            treeGfx.fillCircle(width * 0.3, height * 0.32, width * 0.3);
+            
+            treeGfx.fillStyle(0x4aba4a);
+            treeGfx.fillCircle(width * 0.45, height * 0.2, width * 0.25);
+            
+            treeGfx.setPosition(tx, CONFIG.GROUND_Y - height);
+            treeGfx.setScrollFactor(0.7);
+            treeGfx.setDepth(-40);
+        }
+    }
+    
+    createGround() {
+        // Ground platform
+        this.ground = this.physics.add.staticGroup();
+        
+        const groundGfx = this.add.graphics();
+        groundGfx.setDepth(0);
+        
+        // Grass top
+        groundGfx.fillStyle(0x4a9a3a);
+        groundGfx.fillRect(0, CONFIG.GROUND_Y, CONFIG.LEVEL_WIDTH, 8);
+        groundGfx.fillStyle(0x6ada5a);
+        groundGfx.fillRect(0, CONFIG.GROUND_Y, CONFIG.LEVEL_WIDTH, 2);
+        
+        // Dirt
+        groundGfx.fillStyle(0x6a5040);
+        groundGfx.fillRect(0, CONFIG.GROUND_Y + 8, CONFIG.LEVEL_WIDTH, 24);
+        groundGfx.fillStyle(0x8a7050);
+        groundGfx.fillRect(0, CONFIG.GROUND_Y + 8, CONFIG.LEVEL_WIDTH, 4);
+        
+        // Stone border
+        for (let x = 0; x < CONFIG.LEVEL_WIDTH; x += 20) {
+            groundGfx.fillStyle(0x6a6a6a);
+            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 19, 18);
+            groundGfx.fillStyle(0x8a8a8a);
+            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 19, 2);
+            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 2, 18);
+            groundGfx.fillStyle(0x4a4a4a);
+            groundGfx.fillRect(x + 17, CONFIG.GROUND_Y + 34, 2, 16);
+            groundGfx.fillRect(x + 2, CONFIG.GROUND_Y + 48, 17, 2);
+        }
+        
+        // Grass tufts
+        for (let x = 0; x < CONFIG.LEVEL_WIDTH; x += 10) {
+            groundGfx.fillStyle(0x3a7a2a);
+            groundGfx.fillRect(x, CONFIG.GROUND_Y - 5, 2, 7);
+            groundGfx.fillRect(x + 4, CONFIG.GROUND_Y - 7, 2, 9);
+            groundGfx.fillStyle(0x4a9a3a);
+            groundGfx.fillRect(x + 2, CONFIG.GROUND_Y - 9, 2, 11);
+        }
+        
+        // Invisible collision body
+        const groundBody = this.add.rectangle(CONFIG.LEVEL_WIDTH / 2, CONFIG.GROUND_Y + 25, CONFIG.LEVEL_WIDTH, 50);
+        this.physics.add.existing(groundBody, true);
+        this.groundBody = groundBody;
+    }
+    
+    createResources() {
+        // Berry bushes
+        this.berryBushes = [];
+        for (let i = 0; i < 25; i++) {
+            const x = 200 + i * 120 + Phaser.Math.Between(-30, 30);
+            const bush = this.add.image(x, CONFIG.GROUND_Y - 12, 'berry_bush');
+            bush.setScale(0.9);
+            bush.setDepth(5);
+            bush.collected = false;
+            this.berryBushes.push(bush);
+        }
+        
+        // Water puddles
+        this.puddles = [];
+        for (let i = 0; i < 15; i++) {
+            const x = 300 + i * 200 + Phaser.Math.Between(-50, 50);
+            const puddle = this.add.image(x, CONFIG.GROUND_Y + 2, 'water_puddle');
+            puddle.setDepth(1);
+            puddle.collected = false;
+            puddle.respawnTimer = 0;
+            this.puddles.push(puddle);
+        }
+        
+        // Ponds
+        this.ponds = [];
+        const pondPositions = [500, 1300, 2200];
+        pondPositions.forEach(px => {
+            const pond = this.add.graphics();
+            pond.setDepth(1);
+            
+            // Organic shape
+            pond.fillStyle(COLORS.water.deep);
+            pond.fillEllipse(0, 0, 100, 25);
+            pond.fillStyle(COLORS.water.mid);
+            pond.fillEllipse(-10, -3, 70, 15);
+            pond.fillStyle(COLORS.water.surface);
+            pond.fillEllipse(-15, -5, 40, 8);
+            pond.fillStyle(0xffffff, 0.5);
+            pond.fillRect(-25, -6, 4, 2);
+            pond.fillRect(10, -4, 3, 2);
+            
+            pond.setPosition(px, CONFIG.GROUND_Y + 5);
+            pond.x = px;
+            pond.width = 100;
+            this.ponds.push(pond);
+        });
+    }
+    
+    spawnInitialPickups() {
+        const pickupData = [
+            { x: 250, type: 'armor' },
+            { x: 450, type: 'rapidfire' },
+            { x: 700, type: 'boneclub' },
+            { x: 950, type: 'acidgun' },
+            { x: 1200, type: 'armor' },
+            { x: 1500, type: 'rapidfire' },
+            { x: 1800, type: 'boneclub' },
+            { x: 2100, type: 'acidgun' },
+            { x: 2400, type: 'armor' }
+        ];
+        
+        pickupData.forEach(data => {
+            this.spawnPickup(data.x, CONFIG.GROUND_Y - 40, data.type);
+        });
+    }
+    
+    spawnPickup(x, y, type) {
+        const textureMap = {
+            meat: 'pickup_meat',
+            rapidfire: 'pickup_rapidfire',
+            acidgun: 'pickup_acidgun',
+            boneclub: 'pickup_boneclub',
+            armor: 'pickup_armor'
+        };
+        
+        const pickup = this.physics.add.sprite(x, y, textureMap[type]);
+        pickup.setScale(1.3);
+        pickup.setDepth(10);
+        pickup.pickupType = type;
+        pickup.setBounce(0.3);
+        pickup.setCollideWorldBounds(true);
+        pickup.body.setGravityY(400);
+        
+        // Add glow effect
+        pickup.preFX.addGlow(this.getGlowColor(type), 0.5, 0, false, 0.1, 8);
+        
+        // Bobbing animation
+        this.tweens.add({
+            targets: pickup,
+            y: y - 6,
+            duration: 800,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        
+        this.pickups.add(pickup);
+        this.physics.add.collider(pickup, this.groundBody);
+    }
+    
+    getGlowColor(type) {
+        const colors = {
+            meat: 0xff6666,
+            rapidfire: 0x6699ff,
+            acidgun: 0x66ff66,
+            boneclub: 0xffe6b3,
+            armor: 0x99ccff
+        };
+        return colors[type] || 0xffffff;
+    }
+    
+    createPlayer() {
+        this.player = this.physics.add.sprite(100, CONFIG.GROUND_Y - 80, 'raptor');
+        this.player.setScale(CONFIG.PLAYER_SCALE);
+        this.player.setDepth(50);
+        this.player.setCollideWorldBounds(true);
+        this.player.body.setGravityY(900);
+        this.player.body.setSize(35, 45);
+        this.player.body.setOffset(8, 8);
+        
+        this.player.facing = 1;
+        this.player.isAttacking = false;
+        this.player.clubSwinging = false;
+    }
+    
+    setupCollisions() {
+        this.physics.add.collider(this.player, this.groundBody);
+        this.physics.add.collider(this.enemies, this.groundBody);
+        
+        // Player vs pickups
+        this.physics.add.overlap(this.player, this.pickups, this.collectPickup, null, this);
+        
+        // Bullets vs enemies
+        this.physics.add.overlap(this.bullets, this.enemies, this.bulletHitEnemy, null, this);
+    }
+    
+    collectPickup(player, pickup) {
+        const type = pickup.pickupType;
+        
+        if (type === 'meat') {
+            this.stats.hunger = Math.min(CONFIG.MAX_HUNGER, this.stats.hunger + CONFIG.MEAT_RESTORE);
+            pickup.destroy();
+        } else if (type === 'armor') {
+            if (!this.stats.hasArmor) {
+                this.stats.hasArmor = true;
+                this.stats.armorHits = 0;
+                pickup.destroy();
+            }
+        } else if (type === 'rapidfire' || type === 'acidgun' || type === 'boneclub') {
+            if (!this.stats.weapon || this.stats.weapon === type) {
+                this.stats.weapon = type;
+                this.stats.ammo += (type === 'rapidfire' ? 40 : type === 'acidgun' ? 20 : 15);
+                pickup.destroy();
+            }
+        }
+    }
+    
+    bulletHitEnemy(bullet, enemy) {
+        const damage = bullet.bulletType === 'acid' ? CONFIG.ACID_DAMAGE : CONFIG.RAPID_DAMAGE;
+        enemy.health -= damage;
+        enemy.flashTimer = 150;
+        enemy.setTint(0xff6666);
+        
+        this.time.delayedCall(150, () => {
+            if (enemy.active) enemy.clearTint();
+        });
+        
+        bullet.destroy();
+        
+        if (enemy.health <= 0) {
+            this.spawnPickup(enemy.x, enemy.y, 'meat');
+            enemy.destroy();
+        }
+    }
+    
+    setupInput() {
+        // Keyboard
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+        this.keyX = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+        this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        
+        // Touch controls
+        this.touchControls = { left: false, right: false, up: false, jump: false, attack: false, shoot: false };
+        this.setupTouchButton('dpad-left', 'left');
+        this.setupTouchButton('dpad-right', 'right');
+        this.setupTouchButton('dpad-up', 'up');
+        this.setupTouchButton('dpad-down', 'down');
+        this.setupTouchButton('btn-jump', 'jump');
+        this.setupTouchButton('btn-attack', 'attack');
+        this.setupTouchButton('btn-shoot', 'shoot');
+    }
+    
+    setupTouchButton(id, key) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        
+        const setPressed = (pressed) => {
+            this.touchControls[key] = pressed;
+            el.classList.toggle('pressed', pressed);
+        };
+        
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); setPressed(true); });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); setPressed(false); });
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); setPressed(false); });
+        el.addEventListener('mousedown', (e) => { e.preventDefault(); setPressed(true); });
+        el.addEventListener('mouseup', (e) => { e.preventDefault(); setPressed(false); });
+        el.addEventListener('mouseleave', () => setPressed(false));
+    }
+    
+    createUI() {
+        // Create UI container that stays fixed
+        this.uiContainer = this.add.container(0, 0);
+        this.uiContainer.setScrollFactor(0);
+        this.uiContainer.setDepth(1000);
+        
+        // Health bar
+        this.createStatBar(8, 8, 'health', 0x55aa55, '♥');
+        this.createStatBar(104, 8, 'hunger', 0xaa8844, '🍖');
+        this.createStatBar(200, 8, 'thirst', 0x4488aa, '💧');
+        
+        // Weapon display
+        this.weaponText = this.add.text(CONFIG.WIDTH - 70, 8, '', {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '7px',
+            color: '#ffffff'
+        });
+        this.weaponText.setScrollFactor(0);
+        this.weaponText.setDepth(1000);
+        
+        this.ammoText = this.add.text(CONFIG.WIDTH - 70, 18, '', {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '6px',
+            color: '#aaaaaa'
+        });
+        this.ammoText.setScrollFactor(0);
+        this.ammoText.setDepth(1000);
+        
+        // Armor indicator
+        this.armorIndicator = this.add.graphics();
+        this.armorIndicator.setScrollFactor(0);
+        this.armorIndicator.setDepth(1000);
+    }
+    
+    createStatBar(x, y, stat, color, label) {
+        const barBg = this.add.graphics();
+        barBg.fillStyle(0x000000, 0.7);
+        barBg.fillRect(x, y, 90, 10);
+        barBg.setScrollFactor(0);
+        barBg.setDepth(1000);
+        
+        const barFill = this.add.graphics();
+        barFill.setScrollFactor(0);
+        barFill.setDepth(1001);
+        
+        const labelText = this.add.text(x + 2, y + 1, label, {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '6px',
+            color: '#ffffff'
+        });
+        labelText.setScrollFactor(0);
+        labelText.setDepth(1002);
+        
+        this[stat + 'Bar'] = barFill;
+        this[stat + 'BarColor'] = color;
+    }
+    
+    updateUI() {
+        // Update stat bars
+        this.updateStatBar('health', this.stats.health, CONFIG.MAX_HEALTH, 8, 8);
+        this.updateStatBar('hunger', this.stats.hunger, CONFIG.MAX_HUNGER, 104, 8);
+        this.updateStatBar('thirst', this.stats.thirst, CONFIG.MAX_THIRST, 200, 8);
+        
+        // Update weapon display
+        if (this.stats.weapon) {
+            const names = { rapidfire: 'RAPID', acidgun: 'ACID', boneclub: 'CLUB' };
+            this.weaponText.setText(names[this.stats.weapon] || '');
+            this.ammoText.setText('x' + this.stats.ammo);
+        } else {
+            this.weaponText.setText('');
+            this.ammoText.setText('');
+        }
+        
+        // Update armor indicator
+        this.armorIndicator.clear();
+        if (this.stats.hasArmor) {
+            this.armorIndicator.fillStyle(0x8090a0);
+            this.armorIndicator.fillRect(8, 22, 40, 12);
+            
+            // Draw armor text separately
+            if (!this.armorText) {
+                this.armorText = this.add.text(11, 25, 'ARMOR', {
+                    fontFamily: '"Press Start 2P"',
+                    fontSize: '6px',
+                    color: '#ffffff'
+                });
+                this.armorText.setScrollFactor(0);
+                this.armorText.setDepth(1002);
+            }
+            this.armorText.setVisible(true);
+        } else if (this.armorText) {
+            this.armorText.setVisible(false);
+        }
+    }
+    
+    updateStatBar(stat, value, max, x, y) {
+        const bar = this[stat + 'Bar'];
+        const color = this[stat + 'BarColor'];
+        const pct = value / max;
+        
+        bar.clear();
+        
+        // Warning flash
+        if (pct < 0.25 && Math.sin(this.time.now / 150) > 0) {
+            bar.fillStyle(0xff0000, 0.3);
+            bar.fillRect(x - 2, y - 2, 94, 14);
+        }
+        
+        // Bar fill
+        bar.fillStyle(pct > 0.3 ? color : 0x883333);
+        bar.fillRect(x + 1, y + 1, 88 * pct, 8);
+        
+        // Highlight
+        bar.fillStyle(0xffffff, 0.25);
+        bar.fillRect(x + 1, y + 1, 88 * pct, 3);
+    }
+    
+    update(time, delta) {
+        if (this.gameOver) {
+            if (Phaser.Input.Keyboard.JustDown(this.keyZ) || this.touchControls.attack) {
+                this.scene.restart();
+            }
+            return;
+        }
+        
+        const dt = delta / 1000;
+        
+        // Update timers
+        if (this.attackTimer > 0) this.attackTimer -= delta;
+        if (this.shootTimer > 0) this.shootTimer -= delta;
+        if (this.invulnTimer > 0) this.invulnTimer -= delta;
+        
+        // Update clouds
+        this.clouds.forEach(cloud => {
+            cloud.gfx.x = cloud.baseX + (time * cloud.speed * 0.01) % (CONFIG.LEVEL_WIDTH + 200);
+        });
+        
+        // Survival drain
+        this.stats.hunger -= CONFIG.HUNGER_DRAIN * dt;
+        this.stats.thirst -= CONFIG.THIRST_DRAIN * dt;
+        this.stats.hunger = Math.max(0, this.stats.hunger);
+        this.stats.thirst = Math.max(0, this.stats.thirst);
+        
+        // Starvation/dehydration damage
+        if (this.stats.hunger <= 0) this.stats.health -= CONFIG.STARVATION_DMG * dt;
+        if (this.stats.thirst <= 0) this.stats.health -= CONFIG.DEHYDRATION_DMG * dt;
+        
+        // HP regen when fully fed
+        if (this.stats.hunger >= CONFIG.MAX_HUNGER && this.stats.thirst >= CONFIG.MAX_THIRST) {
+            if (this.stats.health < CONFIG.MAX_HEALTH) {
+                this.stats.health = Math.min(CONFIG.MAX_HEALTH, this.stats.health + CONFIG.HP_REGEN * dt);
+            }
+        }
+        
+        // Check death
+        if (this.stats.health <= 0) {
+            this.stats.health = 0;
+            this.gameOver = true;
+            this.showGameOver();
+            return;
+        }
+        
+        // Player movement
+        this.handlePlayerMovement(dt);
+        
+        // Combat
+        this.handleCombat(time);
+        
+        // Resource collection
+        this.handleResourceCollection();
+        
+        // Enemy spawning
+        this.handleEnemySpawning();
+        
+        // Update enemies
+        this.updateEnemies(dt);
+        
+        // Update puddle respawns
+        this.puddles.forEach(puddle => {
+            if (puddle.collected) {
+                puddle.respawnTimer -= delta;
+                if (puddle.respawnTimer <= 0) {
+                    puddle.collected = false;
+                    puddle.setVisible(true);
+                }
+            }
+        });
+        
+        // Update UI
+        this.updateUI();
+    }
+    
+    handlePlayerMovement(dt) {
+        const isSlowed = this.stats.hunger <= 0 || this.stats.thirst <= 0;
+        const speed = isSlowed ? CONFIG.PLAYER_SPEED_SLOW : CONFIG.PLAYER_SPEED;
+        
+        // Input
+        const left = this.cursors.left.isDown || this.keyA.isDown || this.touchControls.left;
+        const right = this.cursors.right.isDown || this.keyD.isDown || this.touchControls.right;
+        const jump = Phaser.Input.Keyboard.JustDown(this.cursors.up) || 
+                     Phaser.Input.Keyboard.JustDown(this.keyW) ||
+                     Phaser.Input.Keyboard.JustDown(this.keySpace) ||
+                     this.touchControls.jump;
+        
+        // Movement
+        if (left) {
+            this.player.setVelocityX(-speed);
+            this.player.facing = -1;
+            this.player.setFlipX(true);
+        } else if (right) {
+            this.player.setVelocityX(speed);
+            this.player.facing = 1;
+            this.player.setFlipX(false);
+        } else {
+            this.player.setVelocityX(0);
+        }
+        
+        // Jump
+        if (jump && this.player.body.blocked.down) {
+            this.player.setVelocityY(CONFIG.JUMP_VELOCITY);
+        }
+        
+        // Reset touch jump
+        if (this.touchControls.jump) {
+            this.touchControls.jump = false;
+        }
+    }
+    
+    handleCombat(time) {
+        const attackPressed = Phaser.Input.Keyboard.JustDown(this.keyZ) || this.touchControls.attack;
+        const shootPressed = this.keyX.isDown || this.touchControls.shoot;
+        
+        // Melee attack
+        if (attackPressed && this.attackTimer <= 0) {
+            if (this.stats.weapon === 'boneclub' && this.stats.ammo > 0) {
+                // Bone club attack
+                this.player.clubSwinging = true;
+                this.attackTimer = 700;
+                this.stats.ammo--;
+                if (this.stats.ammo <= 0) this.stats.weapon = null;
+                this.doMeleeAttack(CONFIG.BONE_CLUB_DAMAGE, 60);
+            } else {
+                // Regular claw attack
+                this.player.isAttacking = true;
+                this.attackTimer = 400;
+                this.doMeleeAttack(CONFIG.PLAYER_DAMAGE, 45);
+            }
+            
+            this.time.delayedCall(this.attackTimer, () => {
+                this.player.isAttacking = false;
+                this.player.clubSwinging = false;
+            });
+        }
+        
+        // Reset touch attack
+        if (this.touchControls.attack) {
+            this.touchControls.attack = false;
+        }
+        
+        // Ranged attack
+        if (shootPressed && this.shootTimer <= 0 && this.stats.weapon && this.stats.weapon !== 'boneclub') {
+            if (this.stats.ammo > 0) {
+                this.fireWeapon();
+                this.stats.ammo--;
+                if (this.stats.ammo <= 0) this.stats.weapon = null;
+            }
+        }
+        
+        // Enemy attacks on player
+        this.enemies.children.each(enemy => {
+            if (enemy.isAttacking && this.invulnTimer <= 0) {
+                const dist = Phaser.Math.Distance.Between(
+                    this.player.x, this.player.y,
+                    enemy.x, enemy.y
+                );
+                if (dist < 45) {
+                    this.playerTakeDamage(CONFIG.ENEMY_DAMAGE);
+                }
+            }
+        });
+    }
+    
+    doMeleeAttack(damage, range) {
+        const attackX = this.player.x + (this.player.facing * range * 0.5);
+        const attackY = this.player.y;
+        
+        this.enemies.children.each(enemy => {
+            const dist = Phaser.Math.Distance.Between(attackX, attackY, enemy.x, enemy.y);
+            if (dist < range) {
+                enemy.health -= damage;
+                enemy.flashTimer = 150;
+                enemy.setTint(0xff6666);
+                
+                this.time.delayedCall(150, () => {
+                    if (enemy.active) enemy.clearTint();
+                });
+                
+                if (enemy.health <= 0) {
+                    this.spawnPickup(enemy.x, enemy.y, 'meat');
+                    enemy.destroy();
+                }
+            }
+        });
+    }
+    
+    fireWeapon() {
+        const type = this.stats.weapon;
+        const bulletType = type === 'acidgun' ? 'acid' : 'rapid';
+        const texture = 'bullet_' + bulletType;
+        
+        const startX = this.player.x + (this.player.facing * 30);
+        const startY = this.player.y + 10;
+        
+        const bullet = this.physics.add.sprite(startX, startY, texture);
+        bullet.bulletType = bulletType;
+        bullet.setVelocityX(this.player.facing * CONFIG.BULLET_SPEED * (type === 'acidgun' ? 0.8 : 1));
+        
+        if (type === 'acidgun') {
+            bullet.body.setGravityY(150);
+        } else {
+            bullet.body.setGravityY(0);
+        }
+        
+        bullet.setDepth(40);
+        this.bullets.add(bullet);
+        
+        // Destroy bullet after timeout
+        this.time.delayedCall(2000, () => {
+            if (bullet.active) bullet.destroy();
+        });
+        
+        this.shootTimer = type === 'acidgun' ? CONFIG.ACID_FIRE_RATE : CONFIG.RAPID_FIRE_RATE;
+    }
+    
+    playerTakeDamage(amount) {
+        if (this.invulnTimer > 0) return;
+        
+        if (this.stats.hasArmor) {
+            amount = Math.floor(amount * 0.5);
+            this.stats.armorHits++;
+            if (this.stats.armorHits >= 5) {
+                this.stats.hasArmor = false;
+                this.stats.armorHits = 0;
+            }
+        }
+        
+        this.stats.health -= amount;
+        this.invulnTimer = 500;
+        
+        // Flash effect
+        this.player.setTint(0xff6666);
+        this.tweens.add({
+            targets: this.player,
+            alpha: { from: 0.5, to: 1 },
+            duration: 100,
+            repeat: 4,
+            yoyo: true,
+            onComplete: () => {
+                this.player.clearTint();
+                this.player.setAlpha(1);
+            }
+        });
+    }
+    
+    handleResourceCollection() {
+        const px = this.player.x;
+        const py = this.player.y;
+        
+        // Berry bushes
+        this.berryBushes.forEach(bush => {
+            if (!bush.collected && Phaser.Math.Distance.Between(px, py, bush.x, bush.y) < 25) {
+                this.stats.hunger = Math.min(CONFIG.MAX_HUNGER, this.stats.hunger + CONFIG.BERRY_RESTORE);
+                bush.collected = true;
+                bush.setVisible(false);
+            }
+        });
+        
+        // Puddles
+        this.puddles.forEach(puddle => {
+            if (!puddle.collected && Phaser.Math.Distance.Between(px, py, puddle.x, puddle.y) < 20) {
+                this.stats.thirst = Math.min(CONFIG.MAX_THIRST, this.stats.thirst + CONFIG.PUDDLE_RESTORE);
+                puddle.collected = true;
+                puddle.respawnTimer = 25000;
+                puddle.setVisible(false);
+            }
+        });
+        
+        // Ponds (continuous drinking)
+        this.ponds.forEach(pond => {
+            if (px > pond.x - pond.width / 2 && px < pond.x + pond.width / 2 &&
+                Math.abs(py - CONFIG.GROUND_Y) < 30) {
+                this.stats.thirst = Math.min(CONFIG.MAX_THIRST, 
+                    this.stats.thirst + CONFIG.POND_RESTORE_RATE * (1/60));
+            }
+        });
+    }
+    
+    handleEnemySpawning() {
+        this.spawnZones.forEach(zone => {
+            if (!zone.triggered && Math.abs(this.player.x - zone.x) < 200) {
+                if (this.enemies.countActive() < 8) {
+                    this.spawnEnemy(zone.x + Phaser.Math.Between(-50, 50));
+                }
+                zone.triggered = true;
+            }
+        });
+    }
+    
+    spawnEnemy(x) {
+        const enemy = this.physics.add.sprite(x, CONFIG.GROUND_Y - 60, 'spino');
+        enemy.setScale(0.95);
+        enemy.setDepth(45);
+        enemy.setCollideWorldBounds(true);
+        enemy.body.setGravityY(900);
+        enemy.body.setSize(40, 45);
+        enemy.body.setOffset(10, 10);
+        
+        enemy.health = CONFIG.ENEMY_HEALTH;
+        enemy.maxHealth = CONFIG.ENEMY_HEALTH;
+        enemy.state = 'patrol';
+        enemy.patrolDir = Phaser.Math.Between(0, 1) ? 1 : -1;
+        enemy.patrolTimer = Phaser.Math.Between(2000, 4000);
+        enemy.attackCooldown = 0;
+        enemy.isAttacking = false;
+        enemy.sawPlayer = false;
+        enemy.facing = enemy.patrolDir;
+        enemy.flashTimer = 0;
+        
+        this.enemies.add(enemy);
+        this.physics.add.collider(enemy, this.groundBody);
+    }
+    
+    updateEnemies(dt) {
+        this.enemies.children.each(enemy => {
+            if (!enemy.active) return;
+            
+            const dx = this.player.x - enemy.x;
+            const dist = Math.abs(dx);
+            
+            // Attack cooldown
+            if (enemy.attackCooldown > 0) {
+                enemy.attackCooldown -= dt * 1000;
+            }
+            
+            // State machine
+            if (enemy.isAttacking) {
+                enemy.setVelocityX(0);
+                return;
+            }
+            
+            // Can see player?
+            const canSee = dist < CONFIG.ENEMY_SIGHT && 
+                          ((dx > 0 && enemy.facing === 1) || (dx < 0 && enemy.facing === -1));
+            
+            if (canSee || (enemy.sawPlayer && dist < CONFIG.ENEMY_SIGHT * 1.5)) {
+                enemy.sawPlayer = true;
+                enemy.state = 'chase';
+                enemy.facing = dx > 0 ? 1 : -1;
+                enemy.setFlipX(enemy.facing === -1);
+                
+                // Chase or attack
+                if (dist < CONFIG.ENEMY_ATTACK_RANGE && enemy.attackCooldown <= 0) {
+                    // Attack
+                    enemy.isAttacking = true;
+                    enemy.setVelocityX(0);
+                    enemy.attackCooldown = 800;
+                    
+                    this.time.delayedCall(400, () => {
+                        enemy.isAttacking = false;
+                    });
+                } else {
+                    // Chase
+                    enemy.setVelocityX(enemy.facing * CONFIG.ENEMY_CHASE_SPEED);
+                }
+            } else {
+                // Patrol
+                enemy.state = 'patrol';
+                enemy.sawPlayer = false;
+                enemy.patrolTimer -= dt * 1000;
+                
+                if (enemy.patrolTimer <= 0) {
+                    enemy.patrolDir *= -1;
+                    enemy.patrolTimer = Phaser.Math.Between(2000, 4000);
+                }
+                
+                enemy.facing = enemy.patrolDir;
+                enemy.setFlipX(enemy.facing === -1);
+                enemy.setVelocityX(enemy.patrolDir * CONFIG.ENEMY_SPEED);
+            }
+            
+            // Keep in bounds
+            if (enemy.x < 30) {
+                enemy.x = 30;
+                enemy.patrolDir = 1;
+            }
+            if (enemy.x > CONFIG.LEVEL_WIDTH - 30) {
+                enemy.x = CONFIG.LEVEL_WIDTH - 30;
+                enemy.patrolDir = -1;
+            }
+        });
+        
+        // Draw enemy health bars
+        this.enemies.children.each(enemy => {
+            if (!enemy.active || enemy.health >= enemy.maxHealth) return;
+            
+            // Remove old health bar if exists
+            if (enemy.healthBar) {
+                enemy.healthBar.destroy();
+            }
+            
+            // Create new health bar
+            const hpBar = this.add.graphics();
+            const bw = 35, bh = 5;
+            const bx = enemy.x - bw / 2;
+            const by = enemy.y - 35;
+            
+            hpBar.fillStyle(0x222222);
+            hpBar.fillRect(bx, by, bw, bh);
+            
+            const hp = enemy.health / enemy.maxHealth;
+            const color = hp > 0.5 ? 0x44aa44 : hp > 0.25 ? 0xaaaa44 : 0xaa4444;
+            hpBar.fillStyle(color);
+            hpBar.fillRect(bx + 1, by + 1, (bw - 2) * hp, bh - 2);
+            
+            hpBar.setDepth(100);
+            enemy.healthBar = hpBar;
+        });
+    }
+    
+    showGameOver() {
+        // Darken screen
+        const overlay = this.add.graphics();
+        overlay.fillStyle(0x000000, 0.75);
+        overlay.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+        overlay.setScrollFactor(0);
+        overlay.setDepth(2000);
+        
+        // Game over text
+        const gameOverText = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 - 15, 'GAME OVER', {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '16px',
+            color: '#ff4444'
+        });
+        gameOverText.setOrigin(0.5);
+        gameOverText.setScrollFactor(0);
+        gameOverText.setDepth(2001);
+        
+        const restartText = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 20, 
+            'Press Z or tap ATTACK to restart', {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '8px',
+            color: '#ffffff'
+        });
+        restartText.setOrigin(0.5);
+        restartText.setScrollFactor(0);
+        restartText.setDepth(2001);
+    }
+}
+
+// ============================================================
+// GAME INITIALIZATION
+// ============================================================
+const game = new Phaser.Game({
+    type: Phaser.AUTO,
+    width: CONFIG.WIDTH,
+    height: CONFIG.HEIGHT,
+    parent: 'game-container',
+    backgroundColor: '#0a0a12',
+    pixelArt: true,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    scene: [BootScene, GameScene]
+});
+</script>
 </body>
 </html>

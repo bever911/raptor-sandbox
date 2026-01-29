@@ -131,9 +131,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     shoot() {
         if (!this.weapon || this.shootCooldown > 0 || this.weaponAmmo <= 0) return;
         
-        const weaponConfig = GameConfig.WEAPONS[this.weapon.toUpperCase().replace('_', '_')];
-        if (!weaponConfig) return;
+        // Map weapon names to config keys
+        const weaponMap = {
+            'rapidfire': 'RAPID_FIRE',
+            'acidgun': 'ACID_GUN',
+            'boneclub': 'BONE_CLUB'
+        };
         
+        const configKey = weaponMap[this.weapon];
+        if (!configKey || !GameConfig.WEAPONS[configKey]) return;
+        
+        const weaponConfig = GameConfig.WEAPONS[configKey];
         this.shootCooldown = weaponConfig.FIRE_RATE;
         this.weaponAmmo--;
         
