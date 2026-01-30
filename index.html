@@ -1,1627 +1,2307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dino Survival - Phaser 3</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #0a0a12;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #game-canvas {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            max-width: 100%;
-            max-height: 70vh;
-        }
-        
-        #controls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 30vh;
-            min-height: 150px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: linear-gradient(to top, rgba(10,10,18,0.95), rgba(10,10,18,0.7), transparent);
-        }
-        
-        #dpad {
-            position: relative;
-            width: 130px;
-            height: 130px;
-        }
-        
-        .dpad-btn {
-            position: absolute;
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(145deg, rgba(60,80,60,0.8), rgba(30,50,30,0.9));
-            border: 2px solid rgba(100,140,100,0.5);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(150,200,150,0.8);
-            font-size: 16px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-            cursor: pointer;
-        }
-        
-        .dpad-btn:active, .dpad-btn.pressed {
-            background: linear-gradient(145deg, rgba(80,120,80,0.9), rgba(50,80,50,0.95));
-            transform: scale(0.95);
-        }
-        
-        #dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
-        #dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
-        #dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
-        #dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
-        
-        #action-buttons {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        
-        .action-btn {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 3px solid;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 8px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
-            cursor: pointer;
-        }
-        
-        .action-btn:active, .action-btn.pressed {
-            transform: scale(0.92);
-        }
-        
-        #btn-jump {
-            background: linear-gradient(145deg, #4a8f4a, #2d6a2d);
-            border-color: #6ab86a;
-            margin-bottom: 25px;
-        }
-        
-        #btn-attack {
-            background: linear-gradient(145deg, #a84a4a, #7a2d2d);
-            border-color: #c86a6a;
-        }
-        
-        #btn-shoot {
-            background: linear-gradient(145deg, #4a6a8f, #2d4a6a);
-            border-color: #6a8ab8;
-        }
-        
-        #keyboard-hint {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(150,200,150,0.4);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 8px;
-        }
-        
-        @media (pointer: coarse) {
-            #keyboard-hint { display: none; }
-        }
-        
-        @media (pointer: fine) {
-            #controls { opacity: 0.4; }
-            #controls:hover { opacity: 1; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Dino Survival - Phase 8</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: #0a0a12;
+      touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    }
+    #game-container {
+      position: relative; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #game-canvas {
+      image-rendering: pixelated; image-rendering: crisp-edges;
+      background: #1a2a1a; max-width: 100%; max-height: 70vh;
+      border: 4px solid #2a3a2a; box-shadow: 0 0 40px rgba(0, 50, 0, 0.5);
+    }
+    #controls {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 30vh; min-height: 150px;
+      display: flex; justify-content: space-between; align-items: center; padding: 20px 30px;
+      background: linear-gradient(to top, rgba(10,10,18,0.95), rgba(10,10,18,0.7), transparent);
+    }
+    #dpad { position: relative; width: 130px; height: 130px; }
+    .dpad-btn {
+      position: absolute; width: 46px; height: 46px;
+      background: linear-gradient(145deg, rgba(60,80,60,0.8), rgba(30,50,30,0.9));
+      border: 2px solid rgba(100,140,100,0.5); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(150,200,150,0.8); font-size: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .dpad-btn:active, .dpad-btn.pressed {
+      background: linear-gradient(145deg, rgba(80,120,80,0.9), rgba(50,80,50,0.95));
+      transform: scale(0.95);
+    }
+    #dpad-up { top: 0; left: 50%; transform: translateX(-50%); }
+    #dpad-down { bottom: 0; left: 50%; transform: translateX(-50%); }
+    #dpad-left { left: 0; top: 50%; transform: translateY(-50%); }
+    #dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+    #action-buttons { display: flex; gap: 12px; align-items: flex-end; }
+    .action-btn {
+      width: 65px; height: 65px; border-radius: 50%; border: 3px solid;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-family: 'Press Start 2P', monospace; font-size: 8px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+    }
+    .action-btn:active, .action-btn.pressed { transform: scale(0.92); }
+    #btn-jump { background: linear-gradient(145deg, #4a8f4a, #2d6a2d); border-color: #6ab86a; margin-bottom: 25px; }
+    #btn-attack { background: linear-gradient(145deg, #a84a4a, #7a2d2d); border-color: #c86a6a; }
+    #btn-shoot { background: linear-gradient(145deg, #4a6a8f, #2d4a6a); border-color: #6a8ab8; }
+    #keyboard-hint {
+      position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+      color: rgba(150,200,150,0.4); font-family: 'Press Start 2P', monospace; font-size: 8px;
+    }
+    @media (pointer: coarse) { #keyboard-hint { display: none; } }
+    @media (pointer: fine) { #controls { opacity: 0.4; } #controls:hover { opacity: 1; } }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="keyboard-hint">ARROWS: Move • SPACE: Jump • Z: Attack • X: Shoot</div>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="keyboard-hint">ARROWS: Move â€¢ SPACE: Jump â€¢ Z: Attack â€¢ X: Shoot</div>
+  </div>
+  <div id="controls">
+    <div id="dpad">
+      <button class="dpad-btn" id="dpad-up">â–²</button>
+      <button class="dpad-btn" id="dpad-down">â–¼</button>
+      <button class="dpad-btn" id="dpad-left">â—€</button>
+      <button class="dpad-btn" id="dpad-right">â–¶</button>
     </div>
-    
-    <div id="controls">
-        <div id="dpad">
-            <button class="dpad-btn" id="dpad-up">▲</button>
-            <button class="dpad-btn" id="dpad-down">▼</button>
-            <button class="dpad-btn" id="dpad-left">◀</button>
-            <button class="dpad-btn" id="dpad-right">▶</button>
-        </div>
-        <div id="action-buttons">
-            <button class="action-btn" id="btn-shoot">GUN</button>
-            <button class="action-btn" id="btn-attack">ATK</button>
-            <button class="action-btn" id="btn-jump">JUMP</button>
-        </div>
+    <div id="action-buttons">
+      <button class="action-btn" id="btn-shoot">GUN</button>
+      <button class="action-btn" id="btn-attack">ATK</button>
+      <button class="action-btn" id="btn-jump">JUMP</button>
     </div>
+  </div>
 
-<script>
-// ============================================================
-// GAME CONFIGURATION
-// ============================================================
-const CONFIG = {
-    WIDTH: 480,
-    HEIGHT: 270,
-    LEVEL_WIDTH: 3000,
-    GROUND_Y: 220,
-    
-    // Player
-    PLAYER_SCALE: 1.4,
-    PLAYER_SPEED: 160,
-    PLAYER_SPEED_SLOW: 90,
-    JUMP_VELOCITY: -320,
-    
-    // Stats
-    MAX_HEALTH: 100,
-    MAX_HUNGER: 100,
-    MAX_THIRST: 100,
-    HUNGER_DRAIN: 1.5,
-    THIRST_DRAIN: 2.0,
-    STARVATION_DMG: 3,
-    DEHYDRATION_DMG: 4,
-    HP_REGEN: 5,
-    
-    // Combat
-    PLAYER_DAMAGE: 25,
-    BONE_CLUB_DAMAGE: 50,
-    RAPID_DAMAGE: 12,
-    ACID_DAMAGE: 25,
-    
-    ENEMY_HEALTH: 60,
-    ENEMY_DAMAGE: 15,
-    ENEMY_SPEED: 70,
-    ENEMY_CHASE_SPEED: 120,
-    ENEMY_SIGHT: 180,
-    ENEMY_ATTACK_RANGE: 35,
-    
-    // Weapons
-    BULLET_SPEED: 350,
-    RAPID_FIRE_RATE: 120,
-    ACID_FIRE_RATE: 500,
-    
-    // Pickups
-    MEAT_RESTORE: 35,
-    BERRY_RESTORE: 15,
-    PUDDLE_RESTORE: 25,
-    POND_RESTORE_RATE: 40
-};
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const CONFIG = {
+      CANVAS_WIDTH: 480,
+      CANVAS_HEIGHT: 270,
+      LEVEL_WIDTH: 5000,
+      GROUND_HEIGHT: 50,
+      GROUND_STONE_HEIGHT: 16,
 
-// ============================================================
-// COLOR PALETTES
-// ============================================================
-const COLORS = {
-    sky: { top: 0x5a9fd4, mid: 0x8ec5e8, bottom: 0xb8ddf0 },
-    ground: { grass: 0x4a9a3a, dirt: 0x6a5040, stone: 0x6a6a6a },
-    water: { deep: 0x2a5a8a, mid: 0x4a8aba, surface: 0x8acaea },
-    
-    raptor: {
-        body: 0x3d6a4d,
-        bodyLight: 0x4d8a5d,
-        belly: 0xaa9a6a,
-        stripe: 0x1a3a2a,
-        eye: 0xffaa00,
-        claw: 0x2a2a2a
-    },
-    
-    spino: {
-        body: 0x4a6070,
-        bodyLight: 0x5a7888,
-        sail: 0xaa5a3a,
-        sailLight: 0xca7a4a,
-        belly: 0x9a9a8a,
-        eye: 0xff6600
-    }
-};
+      PLAYER_SCALE: 1.4,
+      ENEMY_SCALE: 0.95,
+      
+      PLAYER_SPEED: 180,
+      PLAYER_SPEED_SLOW: 100,
+      PLAYER_ACCELERATION: 1800,
+      PLAYER_FRICTION: 1400,
+      JUMP_FORCE: 340,
+      GRAVITY: 980,
+      MAX_FALL_SPEED: 550,
+      CAMERA_LERP: 0.08,
 
-// ============================================================
-// BOOT SCENE - Generate textures
-// ============================================================
-class BootScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'BootScene' });
-    }
-    
-    create() {
-        this.createRaptorTexture();
-        this.createSpinoTexture();
-        this.createBulletTextures();
-        this.createPickupTextures();
-        this.createGroundTexture();
-        this.scene.start('GameScene');
-    }
-    
-    createRaptorTexture() {
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
-        const w = 48, h = 52;
+      PLAYER_MAX_HEALTH: 100,
+      PLAYER_DAMAGE: 25,
+      HP_REGEN_RATE: 5,
+      
+      ENEMY_BASE_HEALTH: 60,
+      ENEMY_BASE_DAMAGE: 15,
+      ENEMY_BASE_SPEED: 80,
+      ENEMY_BASE_CHASE_SPEED: 130,
+      ENEMY_SIGHT_RANGE: 200,
+      ENEMY_ATTACK_RANGE: 50,
+      ENEMY_ATTACK_COOLDOWN: 0.8,
+      ENEMY_RETREAT_DISTANCE: 80,
+
+      MAX_HUNGER: 100,
+      MAX_THIRST: 100,
+      HUNGER_DRAIN: 1.5,
+      THIRST_DRAIN: 2.0,
+      STARVATION_DAMAGE: 3,
+      DEHYDRATION_DAMAGE: 4,
+
+      MEAT_RESTORE: 35,
+      BERRY_RESTORE: 15,
+      PUDDLE_RESTORE: 25,
+      POND_RESTORE_RATE: 40,
+
+      SPAWN_DISTANCE: 400,
+      MAX_ENEMIES: 10,
+
+      BULLET_SPEED: 350,
+      RAPID_DAMAGE: 12,
+      RAPID_FIRE_RATE: 0.12,
+      ACID_DAMAGE: 25,
+      ACID_FIRE_RATE: 0.5,
+      BONE_CLUB_DAMAGE: 50,
+      BONE_CLUB_RATE: 0.7,
+
+      DEATH_ANIMATION_TIME: 1.5,
+      ENEMY_DEATH_TIME: 1.0,
+
+      DIFFICULTY_SCALE_START: 1000,
+      DIFFICULTY_SCALE_RATE: 0.0002,
+
+      // Day/Night cycle
+      DAY_NIGHT_CYCLE_LENGTH: 120, // seconds for full day/night cycle
+    };
+
+    // ============================================
+    // DAY/NIGHT CYCLE
+    // ============================================
+    const DayNight = {
+      time: 0, // 0 to 1 (0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk)
+      
+      update(dt) {
+        this.time += dt / CONFIG.DAY_NIGHT_CYCLE_LENGTH;
+        this.time = this.time % 1;
+      },
+      
+      getSkyColors() {
+        const t = this.time;
         
-        // Tail
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(2, 22, 8, 10);
-        g.fillRect(-1, 20, 6, 8);
-        g.fillRect(-4, 21, 5, 5);
+        // Night: 0-0.2 and 0.8-1
+        // Dawn: 0.2-0.3
+        // Day: 0.3-0.7
+        // Dusk: 0.7-0.8
         
-        // Body
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(10, 24, 26, 16);
-        g.fillStyle(COLORS.raptor.bodyLight);
-        g.fillRect(12, 26, 22, 12);
-        g.fillRect(14, 18, 22, 10);
+        if (t < 0.2) {
+          // Night -> Dawn transition
+          const phase = t / 0.2;
+          return {
+            top: this.lerpColor('#1a1a3a', '#4a5a8a', phase),
+            mid: this.lerpColor('#2a2a4a', '#6a7aaa', phase),
+            bottom: this.lerpColor('#3a3a5a', '#8a9aca', phase),
+            horizon: this.lerpColor('#4a4a6a', '#aabae8', phase)
+          };
+        } else if (t < 0.3) {
+          // Dawn -> Day transition
+          const phase = (t - 0.2) / 0.1;
+          return {
+            top: this.lerpColor('#4a5a8a', '#5a9fd4', phase),
+            mid: this.lerpColor('#6a7aaa', '#8ec5e8', phase),
+            bottom: this.lerpColor('#8a9aca', '#b8ddf0', phase),
+            horizon: this.lerpColor('#aabae8', '#d4eef8', phase)
+          };
+        } else if (t < 0.7) {
+          // Day (full brightness)
+          return {
+            top: '#5a9fd4',
+            mid: '#8ec5e8',
+            bottom: '#b8ddf0',
+            horizon: '#d4eef8'
+          };
+        } else if (t < 0.8) {
+          // Dusk -> Night transition
+          const phase = (t - 0.7) / 0.1;
+          return {
+            top: this.lerpColor('#5a9fd4', '#4a3a6a', phase),
+            mid: this.lerpColor('#8ec5e8', '#6a5a8a', phase),
+            bottom: this.lerpColor('#b8ddf0', '#8a6aaa', phase),
+            horizon: this.lerpColor('#d4eef8', '#aa8aca', phase)
+          };
+        } else {
+          // Night
+          const phase = (t - 0.8) / 0.2;
+          return {
+            top: this.lerpColor('#4a3a6a', '#1a1a3a', phase),
+            mid: this.lerpColor('#6a5a8a', '#2a2a4a', phase),
+            bottom: this.lerpColor('#8a6aaa', '#3a3a5a', phase),
+            horizon: this.lerpColor('#aa8aca', '#4a4a6a', phase)
+          };
+        }
+      },
+      
+      lerpColor(color1, color2, t) {
+        const r1 = parseInt(color1.slice(1, 3), 16);
+        const g1 = parseInt(color1.slice(3, 5), 16);
+        const b1 = parseInt(color1.slice(5, 7), 16);
+        const r2 = parseInt(color2.slice(1, 3), 16);
+        const g2 = parseInt(color2.slice(3, 5), 16);
+        const b2 = parseInt(color2.slice(5, 7), 16);
         
-        // Stripes
-        g.fillStyle(COLORS.raptor.stripe);
-        g.fillRect(16, 28, 4, 8);
-        g.fillRect(24, 26, 4, 10);
-        g.fillRect(32, 24, 3, 8);
+        const r = Math.round(r1 + (r2 - r1) * t);
+        const g = Math.round(g1 + (g2 - g1) * t);
+        const b = Math.round(b1 + (b2 - b1) * t);
         
-        // Belly
-        g.fillStyle(COLORS.raptor.belly);
-        g.fillRect(16, 34, 16, 6);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+      },
+      
+      getBrightness() {
+        const t = this.time;
+        // Night: 0.4, Day: 1.0
+        if (t < 0.2) return 0.4 + (t / 0.2) * 0.3; // 0.4 -> 0.7
+        if (t < 0.3) return 0.7 + ((t - 0.2) / 0.1) * 0.3; // 0.7 -> 1.0
+        if (t < 0.7) return 1.0; // Full day
+        if (t < 0.8) return 1.0 - ((t - 0.7) / 0.1) * 0.3; // 1.0 -> 0.7
+        return 0.7 - ((t - 0.8) / 0.2) * 0.3; // 0.7 -> 0.4
+      },
+      
+      isNight() {
+        return this.time < 0.2 || this.time > 0.8;
+      },
+      
+      drawStars(ctx, camera, width, height) {
+        if (!this.isNight()) return;
         
-        // Legs
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(10, 34, 10, 8);
-        g.fillRect(8, 40, 8, 10);
-        g.fillRect(28, 34, 8, 6);
-        g.fillRect(30, 38, 6, 10);
+        const brightness = this.time < 0.2 ? (0.2 - this.time) / 0.2 : (this.time - 0.8) / 0.2;
+        ctx.globalAlpha = brightness * 0.9;
         
-        // Feet
-        g.fillStyle(COLORS.raptor.claw);
-        g.fillRect(6, 48, 12, 4);
-        g.fillRect(28, 46, 10, 4);
-        
-        // Neck
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(32, 12, 10, 14);
-        g.fillStyle(COLORS.raptor.bodyLight);
-        g.fillRect(34, 14, 6, 10);
-        
-        // Head
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(34, 4, 16, 14);
-        g.fillStyle(COLORS.raptor.bodyLight);
-        g.fillRect(36, 6, 12, 10);
-        g.fillRect(46, 8, 8, 8);
-        
-        // Eye
-        g.fillStyle(0x000000);
-        g.fillRect(38, 4, 8, 8);
-        g.fillStyle(COLORS.raptor.eye);
-        g.fillRect(40, 6, 4, 4);
-        g.fillStyle(0x000000);
-        g.fillRect(42, 6, 2, 4);
-        g.fillStyle(0xffffff);
-        g.fillRect(40, 6, 1, 1);
-        
-        // Teeth
-        g.fillStyle(0xf0f0e0);
-        g.fillRect(49, 12, 2, 3);
-        g.fillRect(52, 12, 2, 2);
-        
-        // Arms
-        g.fillStyle(COLORS.raptor.body);
-        g.fillRect(32, 24, 6, 5);
-        g.fillRect(36, 22, 8, 4);
-        g.fillStyle(COLORS.raptor.claw);
-        g.fillRect(44, 20, 4, 3);
-        g.fillRect(44, 24, 4, 3);
-        
-        g.generateTexture('raptor', w + 10, h + 4);
-        g.destroy();
-    }
-    
-    createSpinoTexture() {
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
-        const w = 60, h = 56;
-        
-        // Tail
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(0, 30, 10, 6);
-        g.fillRect(8, 28, 8, 8);
-        
-        // Body
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(14, 30, 24, 14);
-        g.fillStyle(COLORS.spino.bodyLight);
-        g.fillRect(16, 32, 20, 10);
-        g.fillRect(18, 24, 20, 10);
-        
-        // Belly
-        g.fillStyle(COLORS.spino.belly);
-        g.fillRect(20, 38, 14, 5);
-        
-        // Sail spines
-        g.fillStyle(0x6a2a1a);
-        for (let i = 0; i < 6; i++) {
-            const sh = 12 + Math.sin(i * 0.8) * 4;
-            g.fillRect(18 + i * 4, 14 - sh, 2, sh);
+        // Fixed star positions based on camera
+        const starCount = 80;
+        for (let i = 0; i < starCount; i++) {
+          const x = ((i * 137.5) % width); // Pseudo-random but consistent
+          const y = ((i * 73.2) % (height * 0.6));
+          const size = 1 + (i % 3);
+          const twinkle = Math.sin(Date.now() / 500 + i) * 0.3 + 0.7;
+          
+          ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+          ctx.fillRect(x, y, size, size);
         }
         
-        // Sail membrane
-        g.fillStyle(COLORS.spino.sail);
-        g.fillRect(18, 8, 24, 14);
-        g.fillStyle(COLORS.spino.sailLight);
-        g.fillRect(20, 10, 20, 10);
-        g.fillStyle(0x8a3a2a);
-        g.fillRect(22, 12, 2, 6);
-        g.fillRect(28, 10, 2, 8);
+        ctx.globalAlpha = 1;
+      },
+      
+      drawMoon(ctx, width, height) {
+        if (!this.isNight()) return;
         
-        // Legs
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(16, 38, 8, 7);
-        g.fillRect(14, 44, 7, 10);
-        g.fillRect(32, 38, 6, 5);
-        g.fillRect(33, 42, 5, 10);
+        const brightness = this.time < 0.2 ? (0.2 - this.time) / 0.2 : (this.time - 0.8) / 0.2;
+        ctx.globalAlpha = brightness;
         
-        // Feet
-        g.fillStyle(0x2a2a2a);
-        g.fillRect(12, 52, 10, 4);
-        g.fillRect(31, 50, 8, 4);
+        const moonX = width * 0.8;
+        const moonY = height * 0.15;
+        const moonSize = 25;
         
-        // Neck
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(36, 22, 8, 14);
+        // Moon
+        ctx.fillStyle = '#f8f8e0';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonSize, 0, Math.PI * 2);
+        ctx.fill();
         
-        // Head
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(40, 18, 12, 10);
-        g.fillStyle(COLORS.spino.bodyLight);
-        g.fillRect(42, 20, 8, 6);
-        g.fillRect(50, 20, 12, 6);
+        // Moon craters
+        ctx.fillStyle = '#d8d8c0';
+        ctx.beginPath();
+        ctx.arc(moonX - 8, moonY - 5, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(moonX + 6, moonY + 3, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(moonX - 3, moonY + 8, 3, 0, Math.PI * 2);
+        ctx.fill();
         
-        // Jaw
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(48, 26, 14, 4);
-        
-        // Eye
-        g.fillStyle(0x000000);
-        g.fillRect(42, 18, 6, 6);
-        g.fillStyle(COLORS.spino.eye);
-        g.fillRect(43, 19, 4, 4);
-        g.fillStyle(0x000000);
-        g.fillRect(45, 19, 2, 4);
-        g.fillStyle(0xffffff);
-        g.fillRect(43, 19, 1, 1);
-        
-        // Teeth
-        g.fillStyle(0xf0f0e0);
-        g.fillRect(52, 26, 2, 3);
-        g.fillRect(56, 26, 2, 2);
-        
-        // Arms
-        g.fillStyle(COLORS.spino.body);
-        g.fillRect(36, 32, 4, 4);
-        g.fillRect(39, 31, 5, 3);
-        
-        g.generateTexture('spino', w + 4, h);
-        g.destroy();
-    }
-    
-    createBulletTextures() {
-        // Rapid fire bullet
-        let g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0xff8800);
-        g.fillCircle(4, 4, 4);
-        g.fillStyle(0xffcc00);
-        g.fillCircle(4, 4, 2);
-        g.generateTexture('bullet_rapid', 8, 8);
-        g.destroy();
-        
-        // Acid blob
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x2a8a2a);
-        g.fillCircle(6, 6, 6);
-        g.fillStyle(0x4afa4a);
-        g.fillCircle(6, 6, 4);
-        g.fillStyle(0x8afa8a);
-        g.fillCircle(5, 5, 2);
-        g.generateTexture('bullet_acid', 12, 12);
-        g.destroy();
-    }
-    
-    createPickupTextures() {
-        let g;
-        
-        // Meat
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x8a3a3a);
-        g.fillRect(4, 6, 16, 12);
-        g.fillStyle(0xaa5a5a);
-        g.fillRect(6, 8, 12, 8);
-        g.fillStyle(0xffffff);
-        g.fillRect(8, 10, 4, 4);
-        g.fillStyle(0xe0e0d0);
-        g.fillRect(2, 8, 4, 6);
-        g.fillRect(18, 8, 4, 6);
-        g.generateTexture('pickup_meat', 24, 24);
-        g.destroy();
-        
-        // Rapid fire gun
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x3a5a7a);
-        g.fillRect(2, 8, 28, 10);
-        g.fillStyle(0x5a7a9a);
-        g.fillRect(4, 9, 24, 8);
-        g.fillStyle(0x8abadf);
-        g.fillRect(6, 11, 8, 4);
-        g.fillStyle(0xffa500);
-        g.fillRect(26, 10, 4, 6);
-        g.generateTexture('pickup_rapidfire', 32, 26);
-        g.destroy();
-        
-        // Acid gun
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x2a5a2a);
-        g.fillRect(2, 7, 28, 12);
-        g.fillStyle(0x4a8a4a);
-        g.fillRect(4, 8, 24, 10);
-        g.fillStyle(0x8afa8a);
-        g.fillRect(8, 10, 10, 6);
-        g.fillStyle(0x4afa4a);
-        g.fillRect(26, 10, 4, 8);
-        g.fillRect(27, 18, 2, 4);
-        g.generateTexture('pickup_acidgun', 32, 26);
-        g.destroy();
-        
-        // Bone club
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x8a7a6a);
-        g.fillRect(10, 14, 8, 18);
-        g.fillStyle(0xd0c8b8);
-        g.fillRect(6, 2, 16, 14);
-        g.fillStyle(0xe8e0d0);
-        g.fillRect(8, 4, 12, 10);
-        g.fillStyle(0xa09080);
-        g.fillRect(7, 3, 4, 5);
-        g.fillRect(17, 3, 4, 5);
-        g.generateTexture('pickup_boneclub', 28, 32);
-        g.destroy();
-        
-        // Armor
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x5070a0);
-        g.fillRect(3, 4, 22, 20);
-        g.fillStyle(0x7090b0);
-        g.fillRect(5, 6, 18, 16);
-        g.fillStyle(0x90b0d0);
-        g.fillRect(7, 8, 14, 12);
-        g.fillStyle(0xb0d0f0);
-        g.fillRect(12, 6, 4, 16);
-        g.fillRect(7, 12, 14, 4);
-        g.generateTexture('pickup_armor', 28, 28);
-        g.destroy();
-        
-        // Berry bush
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x2a5a2a);
-        g.fillCircle(16, 18, 14);
-        g.fillStyle(0x3a7a3a);
-        g.fillCircle(10, 16, 9);
-        g.fillCircle(22, 17, 8);
-        g.fillStyle(0x4a9a4a);
-        g.fillCircle(14, 14, 5);
-        g.fillStyle(0xaa3a5a);
-        g.fillCircle(9, 22, 4);
-        g.fillCircle(19, 23, 4);
-        g.fillCircle(25, 19, 4);
-        g.fillStyle(0xcc5a7a);
-        g.fillCircle(8, 21, 1.5);
-        g.fillCircle(18, 22, 1.5);
-        g.generateTexture('berry_bush', 32, 32);
-        g.destroy();
-        
-        // Water puddle
-        g = this.make.graphics({ x: 0, y: 0, add: false });
-        g.fillStyle(0x4a8aba);
-        g.fillEllipse(14, 8, 28, 14);
-        g.fillStyle(0x8acaea);
-        g.fillEllipse(10, 6, 12, 6);
-        g.fillStyle(0xffffff);
-        g.fillRect(6, 5, 3, 2);
-        g.generateTexture('water_puddle', 28, 16);
-        g.destroy();
-    }
-    
-    createGroundTexture() {
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
-        
-        // Grass layer
-        g.fillStyle(0x4a9a3a);
-        g.fillRect(0, 0, 64, 8);
-        g.fillStyle(0x6ada5a);
-        g.fillRect(0, 0, 64, 2);
-        g.fillStyle(0x3a7a2a);
-        g.fillRect(0, 3, 64, 1);
-        
-        // Dirt layer
-        g.fillStyle(0x6a5040);
-        g.fillRect(0, 8, 64, 24);
-        g.fillStyle(0x8a7050);
-        g.fillRect(0, 8, 64, 4);
-        
-        // Stone layer
-        const stoneY = 32;
-        for (let x = 0; x < 64; x += 16) {
-            g.fillStyle(0x6a6a6a);
-            g.fillRect(x, stoneY, 15, 15);
-            g.fillStyle(0x8a8a8a);
-            g.fillRect(x, stoneY, 15, 2);
-            g.fillRect(x, stoneY, 2, 15);
-            g.fillStyle(0x4a4a4a);
-            g.fillRect(x + 13, stoneY + 2, 2, 13);
-            g.fillRect(x + 2, stoneY + 13, 13, 2);
-        }
-        
-        g.generateTexture('ground', 64, 50);
-        g.destroy();
-    }
-}
+        ctx.globalAlpha = 1;
+      }
+    };
 
-// ============================================================
-// GAME SCENE - Main gameplay
-// ============================================================
-class GameScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'GameScene' });
-    }
-    
-    create() {
-        // World bounds
-        this.physics.world.setBounds(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.HEIGHT);
-        
-        // Create background
-        this.createBackground();
-        
-        // Create ground
-        this.createGround();
-        
-        // Create resource spawns
-        this.createResources();
-        
-        // Create player
-        this.createPlayer();
-        
-        // Enemy group
-        this.enemies = this.physics.add.group();
-        this.spawnZones = [];
-        for (let x = 400; x < CONFIG.LEVEL_WIDTH - 200; x += 450) {
-            this.spawnZones.push({ x: x, triggered: false });
-        }
-        
-        // Bullets group
-        this.bullets = this.physics.add.group();
-        
-        // Pickups group
-        this.pickups = this.physics.add.group();
-        this.spawnInitialPickups();
-        
-        // Setup camera
-        this.cameras.main.setBounds(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.HEIGHT);
-        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-        
-        // Setup collisions
-        this.setupCollisions();
-        
-        // Setup input
-        this.setupInput();
-        
-        // UI
-        this.createUI();
-        
-        // Game state
-        this.gameOver = false;
-        this.attackTimer = 0;
-        this.shootTimer = 0;
-        this.invulnTimer = 0;
-        
-        // Survival stats
-        this.stats = {
-            health: CONFIG.MAX_HEALTH,
-            hunger: CONFIG.MAX_HUNGER,
-            thirst: CONFIG.MAX_THIRST,
-            weapon: null,
-            ammo: 0,
-            hasArmor: false,
-            armorHits: 0
-        };
-    }
-    
-    createBackground() {
-        // Sky gradient (using colored rectangles)
-        const skyGfx = this.add.graphics();
-        const gradient = skyGfx.createLinearGradient(0, 0, 0, CONFIG.GROUND_Y);
-        
-        skyGfx.fillStyle(COLORS.sky.top);
-        skyGfx.fillRect(0, 0, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.4);
-        skyGfx.fillStyle(COLORS.sky.mid);
-        skyGfx.fillRect(0, CONFIG.GROUND_Y * 0.4, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.3);
-        skyGfx.fillStyle(COLORS.sky.bottom);
-        skyGfx.fillRect(0, CONFIG.GROUND_Y * 0.7, CONFIG.LEVEL_WIDTH, CONFIG.GROUND_Y * 0.3);
-        skyGfx.setScrollFactor(0);
-        skyGfx.setDepth(-100);
-        
-        // Clouds
-        this.clouds = [];
+    // ============================================
+    // BIRDS SYSTEM  
+    // ============================================
+    const Birds = {
+      birds: [],
+      
+      init() {
+        const colors = ['#d44a4a', '#4a8ad4', '#d4aa4a', '#6ad44a', '#aa4ad4'];
         for (let i = 0; i < 12; i++) {
-            const cloud = this.add.graphics();
-            const cx = i * 280 + Phaser.Math.Between(-50, 50);
-            const cy = Phaser.Math.Between(20, 60);
-            const size = Phaser.Math.Between(25, 45);
-            
-            cloud.fillStyle(0xe8f4f8);
-            cloud.fillCircle(0, 0, size * 0.6);
-            cloud.fillCircle(-size * 0.5, 5, size * 0.4);
-            cloud.fillCircle(size * 0.5, 3, size * 0.5);
-            cloud.fillStyle(0xffffff);
-            cloud.fillCircle(-5, -5, size * 0.4);
-            
-            cloud.setPosition(cx, cy);
-            cloud.setScrollFactor(0.1);
-            cloud.setDepth(-90);
-            
-            this.clouds.push({ gfx: cloud, speed: Phaser.Math.Between(3, 8), baseX: cx });
+          this.birds.push({
+            x: Math.random() * CONFIG.LEVEL_WIDTH,
+            y: 20 + Math.random() * 60,
+            speed: 30 + Math.random() * 40,
+            flapPhase: Math.random() * Math.PI * 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: 3 + Math.random() * 2
+          });
         }
-        
-        // Mountains
-        this.createMountains();
-        
-        // Jungle silhouettes
-        this.createJungleLayers();
-        
-        // Trees
-        this.createTrees();
+      },
+      
+      update(dt) {
+        for (const bird of this.birds) {
+          bird.x += bird.speed * dt;
+          bird.flapPhase += dt * 8;
+          if (bird.x > CONFIG.LEVEL_WIDTH + 100) {
+            bird.x = -100;
+            bird.y = 20 + Math.random() * 60;
+          }
+        }
+      },
+      
+      draw(ctx, camera) {
+        for (const bird of this.birds) {
+          const sx = bird.x - camera.x * 0.15;
+          if (sx < -20 || sx > CONFIG.CANVAS_WIDTH + 20) continue;
+          
+          const wingFlap = Math.sin(bird.flapPhase) * 3;
+          ctx.fillStyle = bird.color;
+          ctx.beginPath();
+          ctx.moveTo(sx, bird.y);
+          ctx.lineTo(sx - bird.size, bird.y - bird.size + wingFlap);
+          ctx.lineTo(sx + bird.size, bird.y - bird.size + wingFlap);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+    };
+
+    // ============================================
+    // GAME STATS
+    // ============================================
+    const GameStats = {
+      distance: 0,
+      enemiesDefeated: 0,
+      highScore: 0,
+      currentScore: 0,
+
+      init() {
+        const saved = localStorage.getItem('dinoSurvivalHighScore');
+        if (saved) this.highScore = parseInt(saved);
+      },
+
+      reset() {
+        this.distance = 0;
+        this.enemiesDefeated = 0;
+        this.currentScore = 0;
+      },
+
+      updateDistance(playerX) {
+        this.distance = Math.floor(playerX / 10);
+        this.currentScore = this.distance + (this.enemiesDefeated * 100);
+      },
+
+      defeatEnemy() {
+        this.enemiesDefeated++;
+        this.currentScore = this.distance + (this.enemiesDefeated * 100);
+      },
+
+      saveHighScore() {
+        if (this.currentScore > this.highScore) {
+          this.highScore = this.currentScore;
+          localStorage.setItem('dinoSurvivalHighScore', this.highScore.toString());
+        }
+      },
+
+      getDifficultyMultiplier(playerX) {
+        if (playerX < CONFIG.DIFFICULTY_SCALE_START) return 1.0;
+        const excess = playerX - CONFIG.DIFFICULTY_SCALE_START;
+        return 1.0 + (excess * CONFIG.DIFFICULTY_SCALE_RATE);
+      }
+    };
+
+    // ============================================
+    // COLOR PALETTES
+    // ============================================
+    const PALETTE = {
+      skyTop: '#5a9fd4', skyMid: '#8ec5e8', skyBottom: '#b8ddf0', skyHorizon: '#d4eef8',
+      cloudLight: '#ffffff', cloudMid: '#e8f4f8', cloudShadow: '#c8dce8',
+      mountainFar: '#7a9ab0', mountainMid: '#6a8a98', mountainNear: '#5a7a6a', mountainSnow: '#e8f0f0',
+      jungleFar: '#2a5a3a', jungleMid: '#3a7a4a', jungleNear: '#4a9a5a',
+      trunkDark: '#3a2a1a', trunkMid: '#5a4030', trunkLight: '#7a5a40', palmTrunk: '#6a5040',
+      leafDark: '#1a5a2a', leafMid: '#2a8a3a', leafLight: '#4aba4a', leafHighlight: '#6ada5a',
+      palmLeaf: '#3a8a3a', palmLeafLight: '#5aaa4a',
+      grassTop: '#4a9a3a', grassMid: '#3a7a2a', grassDark: '#2a5a1a',
+      dirtLight: '#8a7050', dirtMid: '#6a5040', dirtDark: '#4a3a2a',
+      stoneDark: '#4a4a4a', stoneMid: '#6a6a6a', stoneLight: '#8a8a8a', stoneHighlight: '#9a9a9a',
+      waterDeep: '#2a5a8a', waterMid: '#4a8aba', waterLight: '#6aaada', waterSurface: '#8acaea',
+      waterFoam: '#c8e8f8', waterShine: '#ffffff',
+      flowerRed: '#da4a5a', flowerPink: '#ea8aaa', flowerYellow: '#eaca4a', flowerWhite: '#f8f8f0',
+      mushroomCap: '#ca6a5a', mushroomCapLight: '#da8a7a', mushroomStem: '#e8e0d0',
+      logDark: '#4a3020', logMid: '#6a4a30', logLight: '#8a6a40',
+      rockDark: '#5a5a5a', rockMid: '#7a7a7a', rockLight: '#9a9a9a',
+      berry: '#aa3a5a', berryLight: '#cc5a7a', meat: '#8a3a3a', meatLight: '#aa5a5a',
+    };
+
+    const RAPTOR_COLORS = {
+      scalesDark: '#2d4a3d', scalesMid: '#3d6a4d', scalesLight: '#4d8a5d', scalesHighlight: '#6aaa6a',
+      bellyDark: '#8a7a5a', bellyMid: '#aa9a6a', bellyLight: '#caba8a',
+      stripeDark: '#1a3a2a', stripeAccent: '#4a3a2a',
+      eye: '#ffaa00', eyeRing: '#aa6600', pupil: '#1a1a1a', eyeShine: '#ffffff',
+      clawDark: '#2a2a2a', clawLight: '#4a4a4a',
+      teeth: '#f0f0e0', teethShadow: '#c0c0b0', tongue: '#aa4a5a',
+    };
+
+    const SPINO_COLORS = {
+      scalesDark: '#3a4a5a', scalesMid: '#4a6070', scalesLight: '#5a7888', scalesHighlight: '#7a98a8',
+      sailDark: '#8a3a2a', sailMid: '#aa5a3a', sailLight: '#ca7a4a', sailSpine: '#6a2a1a',
+      bellyDark: '#7a7a6a', bellyMid: '#9a9a8a', bellyLight: '#babaa0',
+      stripeDark: '#2a3a4a',
+      eye: '#ff6600', eyeRing: '#aa4400', pupil: '#1a1a1a', eyeShine: '#ffffff',
+      clawDark: '#2a2a2a', clawLight: '#4a4a4a', teeth: '#f0f0e0',
+    };
+
+    // ============================================
+    // PARTICLE EFFECTS
+    // ============================================
+    class Particle {
+      constructor(x, y, vx, vy, color, size, lifetime) {
+        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+        this.color = color; this.size = size;
+        this.lifetime = lifetime; this.maxLife = lifetime;
+        this.gravity = 300;
+      }
+      update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.vy += this.gravity * dt;
+        this.lifetime -= dt;
+        return this.lifetime <= 0;
+      }
+      draw(ctx, camera) {
+        const sx = this.x - camera.x;
+        const alpha = this.lifetime / this.maxLife;
+        ctx.fillStyle = this.color.replace('1)', alpha + ')');
+        ctx.fillRect(sx - this.size / 2, this.y - this.size / 2, this.size, this.size);
+      }
     }
-    
-    createMountains() {
-        const gfx = this.add.graphics();
-        gfx.setScrollFactor(0.1);
-        gfx.setDepth(-80);
-        
-        // Far mountains
-        gfx.fillStyle(0x7a9ab0);
+
+    class ParticleSystem {
+      constructor() {
+        this.particles = [];
+      }
+      
+      createHitSparks(x, y) {
+        for (let i = 0; i < 8; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 100 + Math.random() * 150;
+          this.particles.push(new Particle(
+            x, y,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed - 100,
+            'rgba(255, 200, 100, 1)',
+            3 + Math.random() * 2,
+            0.3 + Math.random() * 0.2
+          ));
+        }
+      }
+
+      createDeathCloud(x, y) {
         for (let i = 0; i < 15; i++) {
-            const mx = i * 220;
-            const mh = 80 + Math.sin(i * 1.5) * 25;
-            gfx.fillTriangle(mx - 150, CONFIG.GROUND_Y, mx, CONFIG.GROUND_Y - mh, mx + 150, CONFIG.GROUND_Y);
-            
-            // Snow cap
-            gfx.fillStyle(0xe8f0f0);
-            gfx.fillTriangle(mx - 12, CONFIG.GROUND_Y - mh + 18, mx, CONFIG.GROUND_Y - mh, mx + 12, CONFIG.GROUND_Y - mh + 18);
-            gfx.fillStyle(0x7a9ab0);
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 50 + Math.random() * 100;
+          this.particles.push(new Particle(
+            x, y,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed - 150,
+            'rgba(100, 80, 70, 1)',
+            4 + Math.random() * 3,
+            0.5 + Math.random() * 0.3
+          ));
         }
-    }
-    
-    createJungleLayers() {
-        // Far layer
-        const far = this.add.graphics();
-        far.fillStyle(0x2a5a3a);
-        far.setScrollFactor(0.25);
-        far.setDepth(-70);
-        
-        for (let x = 0; x < CONFIG.LEVEL_WIDTH * 2; x += 30) {
-            const h = 30 + Math.sin(x * 0.05) * 15;
-            far.fillCircle(x, CONFIG.GROUND_Y - h * 0.5, h * 0.45);
+      }
+
+      update(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          if (this.particles[i].update(dt)) {
+            this.particles.splice(i, 1);
+          }
         }
-        
-        // Mid layer
-        const mid = this.add.graphics();
-        mid.fillStyle(0x3a7a4a);
-        mid.setScrollFactor(0.4);
-        mid.setDepth(-60);
-        
-        for (let x = 0; x < CONFIG.LEVEL_WIDTH * 1.5; x += 25) {
-            const h = 25 + Math.sin(x * 0.07) * 12;
-            mid.fillCircle(x, CONFIG.GROUND_Y - h * 0.4, h * 0.4);
+      }
+
+      draw(ctx, camera) {
+        for (const p of this.particles) {
+          p.draw(ctx, camera);
         }
+      }
     }
-    
-    createTrees() {
-        // Background trees
-        for (let i = 0; i < 50; i++) {
-            const tx = i * 70 + Phaser.Math.Between(-20, 20);
-            const treeGfx = this.add.graphics();
-            const height = Phaser.Math.Between(45, 70);
-            const width = Phaser.Math.Between(25, 40);
-            
-            // Trunk
-            treeGfx.fillStyle(0x3a2a1a);
-            treeGfx.fillRect(width * 0.35, height * 0.4, width * 0.3, height * 0.6);
-            treeGfx.fillStyle(0x5a4030);
-            treeGfx.fillRect(width * 0.4, height * 0.45, width * 0.15, height * 0.5);
-            
-            // Foliage
-            treeGfx.fillStyle(0x1a5a2a);
-            treeGfx.fillCircle(width * 0.5, height * 0.3, width * 0.5);
-            treeGfx.fillCircle(width * 0.2, height * 0.35, width * 0.35);
-            treeGfx.fillCircle(width * 0.8, height * 0.33, width * 0.38);
-            
-            treeGfx.fillStyle(0x2a8a3a);
-            treeGfx.fillCircle(width * 0.5, height * 0.25, width * 0.4);
-            treeGfx.fillCircle(width * 0.3, height * 0.32, width * 0.3);
-            
-            treeGfx.fillStyle(0x4aba4a);
-            treeGfx.fillCircle(width * 0.45, height * 0.2, width * 0.25);
-            
-            treeGfx.setPosition(tx, CONFIG.GROUND_Y - height);
-            treeGfx.setScrollFactor(0.7);
-            treeGfx.setDepth(-40);
-        }
-    }
-    
-    createGround() {
-        // Ground platform
-        this.ground = this.physics.add.staticGroup();
-        
-        const groundGfx = this.add.graphics();
-        groundGfx.setDepth(0);
-        
-        // Grass top
-        groundGfx.fillStyle(0x4a9a3a);
-        groundGfx.fillRect(0, CONFIG.GROUND_Y, CONFIG.LEVEL_WIDTH, 8);
-        groundGfx.fillStyle(0x6ada5a);
-        groundGfx.fillRect(0, CONFIG.GROUND_Y, CONFIG.LEVEL_WIDTH, 2);
-        
-        // Dirt
-        groundGfx.fillStyle(0x6a5040);
-        groundGfx.fillRect(0, CONFIG.GROUND_Y + 8, CONFIG.LEVEL_WIDTH, 24);
-        groundGfx.fillStyle(0x8a7050);
-        groundGfx.fillRect(0, CONFIG.GROUND_Y + 8, CONFIG.LEVEL_WIDTH, 4);
-        
-        // Stone border
-        for (let x = 0; x < CONFIG.LEVEL_WIDTH; x += 20) {
-            groundGfx.fillStyle(0x6a6a6a);
-            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 19, 18);
-            groundGfx.fillStyle(0x8a8a8a);
-            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 19, 2);
-            groundGfx.fillRect(x, CONFIG.GROUND_Y + 32, 2, 18);
-            groundGfx.fillStyle(0x4a4a4a);
-            groundGfx.fillRect(x + 17, CONFIG.GROUND_Y + 34, 2, 16);
-            groundGfx.fillRect(x + 2, CONFIG.GROUND_Y + 48, 17, 2);
-        }
-        
-        // Grass tufts
-        for (let x = 0; x < CONFIG.LEVEL_WIDTH; x += 10) {
-            groundGfx.fillStyle(0x3a7a2a);
-            groundGfx.fillRect(x, CONFIG.GROUND_Y - 5, 2, 7);
-            groundGfx.fillRect(x + 4, CONFIG.GROUND_Y - 7, 2, 9);
-            groundGfx.fillStyle(0x4a9a3a);
-            groundGfx.fillRect(x + 2, CONFIG.GROUND_Y - 9, 2, 11);
-        }
-        
-        // Invisible collision body
-        const groundBody = this.add.rectangle(CONFIG.LEVEL_WIDTH / 2, CONFIG.GROUND_Y + 25, CONFIG.LEVEL_WIDTH, 50);
-        this.physics.add.existing(groundBody, true);
-        this.groundBody = groundBody;
-    }
-    
-    createResources() {
-        // Berry bushes
-        this.berryBushes = [];
-        for (let i = 0; i < 25; i++) {
-            const x = 200 + i * 120 + Phaser.Math.Between(-30, 30);
-            const bush = this.add.image(x, CONFIG.GROUND_Y - 12, 'berry_bush');
-            bush.setScale(0.9);
-            bush.setDepth(5);
-            bush.collected = false;
-            this.berryBushes.push(bush);
-        }
-        
-        // Water puddles
-        this.puddles = [];
-        for (let i = 0; i < 15; i++) {
-            const x = 300 + i * 200 + Phaser.Math.Between(-50, 50);
-            const puddle = this.add.image(x, CONFIG.GROUND_Y + 2, 'water_puddle');
-            puddle.setDepth(1);
-            puddle.collected = false;
-            puddle.respawnTimer = 0;
-            this.puddles.push(puddle);
-        }
-        
-        // Ponds
-        this.ponds = [];
-        const pondPositions = [500, 1300, 2200];
-        pondPositions.forEach(px => {
-            const pond = this.add.graphics();
-            pond.setDepth(1);
-            
-            // Organic shape
-            pond.fillStyle(COLORS.water.deep);
-            pond.fillEllipse(0, 0, 100, 25);
-            pond.fillStyle(COLORS.water.mid);
-            pond.fillEllipse(-10, -3, 70, 15);
-            pond.fillStyle(COLORS.water.surface);
-            pond.fillEllipse(-15, -5, 40, 8);
-            pond.fillStyle(0xffffff, 0.5);
-            pond.fillRect(-25, -6, 4, 2);
-            pond.fillRect(10, -4, 3, 2);
-            
-            pond.setPosition(px, CONFIG.GROUND_Y + 5);
-            pond.x = px;
-            pond.width = 100;
-            this.ponds.push(pond);
-        });
-    }
-    
-    spawnInitialPickups() {
-        const pickupData = [
-            { x: 250, type: 'armor' },
-            { x: 450, type: 'rapidfire' },
-            { x: 700, type: 'boneclub' },
-            { x: 950, type: 'acidgun' },
-            { x: 1200, type: 'armor' },
-            { x: 1500, type: 'rapidfire' },
-            { x: 1800, type: 'boneclub' },
-            { x: 2100, type: 'acidgun' },
-            { x: 2400, type: 'armor' }
-        ];
-        
-        pickupData.forEach(data => {
-            this.spawnPickup(data.x, CONFIG.GROUND_Y - 40, data.type);
-        });
-    }
-    
-    spawnPickup(x, y, type) {
-        const textureMap = {
-            meat: 'pickup_meat',
-            rapidfire: 'pickup_rapidfire',
-            acidgun: 'pickup_acidgun',
-            boneclub: 'pickup_boneclub',
-            armor: 'pickup_armor'
-        };
-        
-        const pickup = this.physics.add.sprite(x, y, textureMap[type]);
-        pickup.setScale(1.3);
-        pickup.setDepth(10);
-        pickup.pickupType = type;
-        pickup.setBounce(0.3);
-        pickup.setCollideWorldBounds(true);
-        pickup.body.setGravityY(400);
-        
-        // Add glow effect
-        pickup.preFX.addGlow(this.getGlowColor(type), 0.5, 0, false, 0.1, 8);
-        
-        // Bobbing animation
-        this.tweens.add({
-            targets: pickup,
-            y: y - 6,
-            duration: 800,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-        
-        this.pickups.add(pickup);
-        this.physics.add.collider(pickup, this.groundBody);
-    }
-    
-    getGlowColor(type) {
-        const colors = {
-            meat: 0xff6666,
-            rapidfire: 0x6699ff,
-            acidgun: 0x66ff66,
-            boneclub: 0xffe6b3,
-            armor: 0x99ccff
-        };
-        return colors[type] || 0xffffff;
-    }
-    
-    createPlayer() {
-        this.player = this.physics.add.sprite(100, CONFIG.GROUND_Y - 80, 'raptor');
-        this.player.setScale(CONFIG.PLAYER_SCALE);
-        this.player.setDepth(50);
-        this.player.setCollideWorldBounds(true);
-        this.player.body.setGravityY(900);
-        this.player.body.setSize(35, 45);
-        this.player.body.setOffset(8, 8);
-        
-        this.player.facing = 1;
-        this.player.isAttacking = false;
-        this.player.clubSwinging = false;
-    }
-    
-    setupCollisions() {
-        this.physics.add.collider(this.player, this.groundBody);
-        this.physics.add.collider(this.enemies, this.groundBody);
-        
-        // Player vs pickups
-        this.physics.add.overlap(this.player, this.pickups, this.collectPickup, null, this);
-        
-        // Bullets vs enemies
-        this.physics.add.overlap(this.bullets, this.enemies, this.bulletHitEnemy, null, this);
-    }
-    
-    collectPickup(player, pickup) {
-        const type = pickup.pickupType;
-        
-        if (type === 'meat') {
-            this.stats.hunger = Math.min(CONFIG.MAX_HUNGER, this.stats.hunger + CONFIG.MEAT_RESTORE);
-            pickup.destroy();
-        } else if (type === 'armor') {
-            if (!this.stats.hasArmor) {
-                this.stats.hasArmor = true;
-                this.stats.armorHits = 0;
-                pickup.destroy();
-            }
-        } else if (type === 'rapidfire' || type === 'acidgun' || type === 'boneclub') {
-            if (!this.stats.weapon || this.stats.weapon === type) {
-                this.stats.weapon = type;
-                this.stats.ammo += (type === 'rapidfire' ? 40 : type === 'acidgun' ? 20 : 15);
-                pickup.destroy();
-            }
-        }
-    }
-    
-    bulletHitEnemy(bullet, enemy) {
-        const damage = bullet.bulletType === 'acid' ? CONFIG.ACID_DAMAGE : CONFIG.RAPID_DAMAGE;
-        enemy.health -= damage;
-        enemy.flashTimer = 150;
-        enemy.setTint(0xff6666);
-        
-        this.time.delayedCall(150, () => {
-            if (enemy.active) enemy.clearTint();
-        });
-        
-        bullet.destroy();
-        
-        if (enemy.health <= 0) {
-            this.spawnPickup(enemy.x, enemy.y, 'meat');
-            enemy.destroy();
-        }
-    }
-    
-    setupInput() {
-        // Keyboard
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-        this.keyX = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
-        this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-        this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        this.keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-        this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        
-        // Touch controls
-        this.touchControls = { left: false, right: false, up: false, jump: false, attack: false, shoot: false };
-        this.setupTouchButton('dpad-left', 'left');
-        this.setupTouchButton('dpad-right', 'right');
-        this.setupTouchButton('dpad-up', 'up');
-        this.setupTouchButton('dpad-down', 'down');
-        this.setupTouchButton('btn-jump', 'jump');
-        this.setupTouchButton('btn-attack', 'attack');
-        this.setupTouchButton('btn-shoot', 'shoot');
-    }
-    
-    setupTouchButton(id, key) {
+
+    // ============================================
+    // INPUT
+    // ============================================
+    const Input = {
+      keys: { left: false, right: false, up: false, down: false, jump: false, attack: false, shoot: false },
+      attackPressed: false, shootPressed: false,
+      init() {
+        window.addEventListener('keydown', e => this.handleKey(e, true));
+        window.addEventListener('keyup', e => this.handleKey(e, false));
+        ['dpad-left', 'dpad-right', 'dpad-up', 'dpad-down'].forEach(id => this.setupTouch(id, id.split('-')[1]));
+        this.setupTouch('btn-jump', 'jump');
+        this.setupTouch('btn-attack', 'attack');
+        this.setupTouch('btn-shoot', 'shoot');
+        document.addEventListener('contextmenu', e => e.preventDefault());
+      },
+      handleKey(e, down) {
+        const map = { 'ArrowLeft': 'left', 'KeyA': 'left', 'ArrowRight': 'right', 'KeyD': 'right',
+          'ArrowUp': 'up', 'KeyW': 'up', 'ArrowDown': 'down', 'KeyS': 'down',
+          'Space': 'jump', 'KeyZ': 'attack', 'KeyX': 'shoot' };
+        if (map[e.code]) { e.preventDefault(); this.keys[map[e.code]] = down; }
+      },
+      setupTouch(id, key) {
         const el = document.getElementById(id);
         if (!el) return;
-        
-        const setPressed = (pressed) => {
-            this.touchControls[key] = pressed;
-            el.classList.toggle('pressed', pressed);
-        };
-        
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); setPressed(true); });
-        el.addEventListener('touchend', (e) => { e.preventDefault(); setPressed(false); });
-        el.addEventListener('touchcancel', (e) => { e.preventDefault(); setPressed(false); });
-        el.addEventListener('mousedown', (e) => { e.preventDefault(); setPressed(true); });
-        el.addEventListener('mouseup', (e) => { e.preventDefault(); setPressed(false); });
-        el.addEventListener('mouseleave', () => setPressed(false));
-    }
-    
-    createUI() {
-        // Create UI container that stays fixed
-        this.uiContainer = this.add.container(0, 0);
-        this.uiContainer.setScrollFactor(0);
-        this.uiContainer.setDepth(1000);
-        
-        // Health bar
-        this.createStatBar(8, 8, 'health', 0x55aa55, '♥');
-        this.createStatBar(104, 8, 'hunger', 0xaa8844, '🍖');
-        this.createStatBar(200, 8, 'thirst', 0x4488aa, '💧');
-        
-        // Weapon display
-        this.weaponText = this.add.text(CONFIG.WIDTH - 70, 8, '', {
-            fontFamily: '"Press Start 2P"',
-            fontSize: '7px',
-            color: '#ffffff'
-        });
-        this.weaponText.setScrollFactor(0);
-        this.weaponText.setDepth(1000);
-        
-        this.ammoText = this.add.text(CONFIG.WIDTH - 70, 18, '', {
-            fontFamily: '"Press Start 2P"',
-            fontSize: '6px',
-            color: '#aaaaaa'
-        });
-        this.ammoText.setScrollFactor(0);
-        this.ammoText.setDepth(1000);
-        
-        // Armor indicator
-        this.armorIndicator = this.add.graphics();
-        this.armorIndicator.setScrollFactor(0);
-        this.armorIndicator.setDepth(1000);
-    }
-    
-    createStatBar(x, y, stat, color, label) {
-        const barBg = this.add.graphics();
-        barBg.fillStyle(0x000000, 0.7);
-        barBg.fillRect(x, y, 90, 10);
-        barBg.setScrollFactor(0);
-        barBg.setDepth(1000);
-        
-        const barFill = this.add.graphics();
-        barFill.setScrollFactor(0);
-        barFill.setDepth(1001);
-        
-        const labelText = this.add.text(x + 2, y + 1, label, {
-            fontFamily: '"Press Start 2P"',
-            fontSize: '6px',
-            color: '#ffffff'
-        });
-        labelText.setScrollFactor(0);
-        labelText.setDepth(1002);
-        
-        this[stat + 'Bar'] = barFill;
-        this[stat + 'BarColor'] = color;
-    }
-    
-    updateUI() {
-        // Update stat bars
-        this.updateStatBar('health', this.stats.health, CONFIG.MAX_HEALTH, 8, 8);
-        this.updateStatBar('hunger', this.stats.hunger, CONFIG.MAX_HUNGER, 104, 8);
-        this.updateStatBar('thirst', this.stats.thirst, CONFIG.MAX_THIRST, 200, 8);
-        
-        // Update weapon display
-        if (this.stats.weapon) {
-            const names = { rapidfire: 'RAPID', acidgun: 'ACID', boneclub: 'CLUB' };
-            this.weaponText.setText(names[this.stats.weapon] || '');
-            this.ammoText.setText('x' + this.stats.ammo);
-        } else {
-            this.weaponText.setText('');
-            this.ammoText.setText('');
-        }
-        
-        // Update armor indicator
-        this.armorIndicator.clear();
-        if (this.stats.hasArmor) {
-            this.armorIndicator.fillStyle(0x8090a0);
-            this.armorIndicator.fillRect(8, 22, 40, 12);
-            
-            // Draw armor text separately
-            if (!this.armorText) {
-                this.armorText = this.add.text(11, 25, 'ARMOR', {
-                    fontFamily: '"Press Start 2P"',
-                    fontSize: '6px',
-                    color: '#ffffff'
-                });
-                this.armorText.setScrollFactor(0);
-                this.armorText.setDepth(1002);
-            }
-            this.armorText.setVisible(true);
-        } else if (this.armorText) {
-            this.armorText.setVisible(false);
-        }
-    }
-    
-    updateStatBar(stat, value, max, x, y) {
-        const bar = this[stat + 'Bar'];
-        const color = this[stat + 'BarColor'];
-        const pct = value / max;
-        
-        bar.clear();
-        
-        // Warning flash
-        if (pct < 0.25 && Math.sin(this.time.now / 150) > 0) {
-            bar.fillStyle(0xff0000, 0.3);
-            bar.fillRect(x - 2, y - 2, 94, 14);
-        }
-        
-        // Bar fill
-        bar.fillStyle(pct > 0.3 ? color : 0x883333);
-        bar.fillRect(x + 1, y + 1, 88 * pct, 8);
-        
-        // Highlight
-        bar.fillStyle(0xffffff, 0.25);
-        bar.fillRect(x + 1, y + 1, 88 * pct, 3);
-    }
-    
-    update(time, delta) {
-        if (this.gameOver) {
-            if (Phaser.Input.Keyboard.JustDown(this.keyZ) || this.touchControls.attack) {
-                this.scene.restart();
-            }
-            return;
-        }
-        
-        const dt = delta / 1000;
-        
-        // Update timers
-        if (this.attackTimer > 0) this.attackTimer -= delta;
-        if (this.shootTimer > 0) this.shootTimer -= delta;
-        if (this.invulnTimer > 0) this.invulnTimer -= delta;
-        
-        // Update clouds
-        this.clouds.forEach(cloud => {
-            cloud.gfx.x = cloud.baseX + (time * cloud.speed * 0.01) % (CONFIG.LEVEL_WIDTH + 200);
-        });
-        
-        // Survival drain
-        this.stats.hunger -= CONFIG.HUNGER_DRAIN * dt;
-        this.stats.thirst -= CONFIG.THIRST_DRAIN * dt;
-        this.stats.hunger = Math.max(0, this.stats.hunger);
-        this.stats.thirst = Math.max(0, this.stats.thirst);
-        
-        // Starvation/dehydration damage
-        if (this.stats.hunger <= 0) this.stats.health -= CONFIG.STARVATION_DMG * dt;
-        if (this.stats.thirst <= 0) this.stats.health -= CONFIG.DEHYDRATION_DMG * dt;
-        
-        // HP regen when fully fed
-        if (this.stats.hunger >= CONFIG.MAX_HUNGER && this.stats.thirst >= CONFIG.MAX_THIRST) {
-            if (this.stats.health < CONFIG.MAX_HEALTH) {
-                this.stats.health = Math.min(CONFIG.MAX_HEALTH, this.stats.health + CONFIG.HP_REGEN * dt);
-            }
-        }
-        
-        // Check death
-        if (this.stats.health <= 0) {
-            this.stats.health = 0;
-            this.gameOver = true;
-            this.showGameOver();
-            return;
-        }
-        
-        // Player movement
-        this.handlePlayerMovement(dt);
-        
-        // Combat
-        this.handleCombat(time);
-        
-        // Resource collection
-        this.handleResourceCollection();
-        
-        // Enemy spawning
-        this.handleEnemySpawning();
-        
-        // Update enemies
-        this.updateEnemies(dt);
-        
-        // Update puddle respawns
-        this.puddles.forEach(puddle => {
-            if (puddle.collected) {
-                puddle.respawnTimer -= delta;
-                if (puddle.respawnTimer <= 0) {
-                    puddle.collected = false;
-                    puddle.setVisible(true);
-                }
-            }
-        });
-        
-        // Update UI
-        this.updateUI();
-    }
-    
-    handlePlayerMovement(dt) {
-        const isSlowed = this.stats.hunger <= 0 || this.stats.thirst <= 0;
-        const speed = isSlowed ? CONFIG.PLAYER_SPEED_SLOW : CONFIG.PLAYER_SPEED;
-        
-        // Input
-        const left = this.cursors.left.isDown || this.keyA.isDown || this.touchControls.left;
-        const right = this.cursors.right.isDown || this.keyD.isDown || this.touchControls.right;
-        const jump = Phaser.Input.Keyboard.JustDown(this.cursors.up) || 
-                     Phaser.Input.Keyboard.JustDown(this.keyW) ||
-                     Phaser.Input.Keyboard.JustDown(this.keySpace) ||
-                     this.touchControls.jump;
-        
-        // Movement
-        if (left) {
-            this.player.setVelocityX(-speed);
-            this.player.facing = -1;
-            this.player.setFlipX(true);
-        } else if (right) {
-            this.player.setVelocityX(speed);
-            this.player.facing = 1;
-            this.player.setFlipX(false);
-        } else {
-            this.player.setVelocityX(0);
-        }
-        
-        // Jump
-        if (jump && this.player.body.blocked.down) {
-            this.player.setVelocityY(CONFIG.JUMP_VELOCITY);
-        }
-        
-        // Reset touch jump
-        if (this.touchControls.jump) {
-            this.touchControls.jump = false;
-        }
-    }
-    
-    handleCombat(time) {
-        const attackPressed = Phaser.Input.Keyboard.JustDown(this.keyZ) || this.touchControls.attack;
-        const shootPressed = this.keyX.isDown || this.touchControls.shoot;
-        
-        // Melee attack
-        if (attackPressed && this.attackTimer <= 0) {
-            if (this.stats.weapon === 'boneclub' && this.stats.ammo > 0) {
-                // Bone club attack
-                this.player.clubSwinging = true;
-                this.attackTimer = 700;
-                this.stats.ammo--;
-                if (this.stats.ammo <= 0) this.stats.weapon = null;
-                this.doMeleeAttack(CONFIG.BONE_CLUB_DAMAGE, 60);
-            } else {
-                // Regular claw attack
-                this.player.isAttacking = true;
-                this.attackTimer = 400;
-                this.doMeleeAttack(CONFIG.PLAYER_DAMAGE, 45);
-            }
-            
-            this.time.delayedCall(this.attackTimer, () => {
-                this.player.isAttacking = false;
-                this.player.clubSwinging = false;
-            });
-        }
-        
-        // Reset touch attack
-        if (this.touchControls.attack) {
-            this.touchControls.attack = false;
-        }
-        
-        // Ranged attack
-        if (shootPressed && this.shootTimer <= 0 && this.stats.weapon && this.stats.weapon !== 'boneclub') {
-            if (this.stats.ammo > 0) {
-                this.fireWeapon();
-                this.stats.ammo--;
-                if (this.stats.ammo <= 0) this.stats.weapon = null;
-            }
-        }
-        
-        // Enemy attacks on player
-        this.enemies.children.each(enemy => {
-            if (enemy.isAttacking && this.invulnTimer <= 0) {
-                const dist = Phaser.Math.Distance.Between(
-                    this.player.x, this.player.y,
-                    enemy.x, enemy.y
-                );
-                if (dist < 45) {
-                    this.playerTakeDamage(CONFIG.ENEMY_DAMAGE);
-                }
-            }
-        });
-    }
-    
-    doMeleeAttack(damage, range) {
-        const attackX = this.player.x + (this.player.facing * range * 0.5);
-        const attackY = this.player.y;
-        
-        this.enemies.children.each(enemy => {
-            const dist = Phaser.Math.Distance.Between(attackX, attackY, enemy.x, enemy.y);
-            if (dist < range) {
-                enemy.health -= damage;
-                enemy.flashTimer = 150;
-                enemy.setTint(0xff6666);
-                
-                this.time.delayedCall(150, () => {
-                    if (enemy.active) enemy.clearTint();
-                });
-                
-                if (enemy.health <= 0) {
-                    this.spawnPickup(enemy.x, enemy.y, 'meat');
-                    enemy.destroy();
-                }
-            }
-        });
-    }
-    
-    fireWeapon() {
-        const type = this.stats.weapon;
-        const bulletType = type === 'acidgun' ? 'acid' : 'rapid';
-        const texture = 'bullet_' + bulletType;
-        
-        const startX = this.player.x + (this.player.facing * 30);
-        const startY = this.player.y + 10;
-        
-        const bullet = this.physics.add.sprite(startX, startY, texture);
-        bullet.bulletType = bulletType;
-        bullet.setVelocityX(this.player.facing * CONFIG.BULLET_SPEED * (type === 'acidgun' ? 0.8 : 1));
-        
-        if (type === 'acidgun') {
-            bullet.body.setGravityY(150);
-        } else {
-            bullet.body.setGravityY(0);
-        }
-        
-        bullet.setDepth(40);
-        this.bullets.add(bullet);
-        
-        // Destroy bullet after timeout
-        this.time.delayedCall(2000, () => {
-            if (bullet.active) bullet.destroy();
-        });
-        
-        this.shootTimer = type === 'acidgun' ? CONFIG.ACID_FIRE_RATE : CONFIG.RAPID_FIRE_RATE;
-    }
-    
-    playerTakeDamage(amount) {
-        if (this.invulnTimer > 0) return;
-        
-        if (this.stats.hasArmor) {
-            amount = Math.floor(amount * 0.5);
-            this.stats.armorHits++;
-            if (this.stats.armorHits >= 5) {
-                this.stats.hasArmor = false;
-                this.stats.armorHits = 0;
-            }
-        }
-        
-        this.stats.health -= amount;
-        this.invulnTimer = 500;
-        
-        // Flash effect
-        this.player.setTint(0xff6666);
-        this.tweens.add({
-            targets: this.player,
-            alpha: { from: 0.5, to: 1 },
-            duration: 100,
-            repeat: 4,
-            yoyo: true,
-            onComplete: () => {
-                this.player.clearTint();
-                this.player.setAlpha(1);
-            }
-        });
-    }
-    
-    handleResourceCollection() {
-        const px = this.player.x;
-        const py = this.player.y;
-        
-        // Berry bushes
-        this.berryBushes.forEach(bush => {
-            if (!bush.collected && Phaser.Math.Distance.Between(px, py, bush.x, bush.y) < 25) {
-                this.stats.hunger = Math.min(CONFIG.MAX_HUNGER, this.stats.hunger + CONFIG.BERRY_RESTORE);
-                bush.collected = true;
-                bush.setVisible(false);
-            }
-        });
-        
-        // Puddles
-        this.puddles.forEach(puddle => {
-            if (!puddle.collected && Phaser.Math.Distance.Between(px, py, puddle.x, puddle.y) < 20) {
-                this.stats.thirst = Math.min(CONFIG.MAX_THIRST, this.stats.thirst + CONFIG.PUDDLE_RESTORE);
-                puddle.collected = true;
-                puddle.respawnTimer = 25000;
-                puddle.setVisible(false);
-            }
-        });
-        
-        // Ponds (continuous drinking)
-        this.ponds.forEach(pond => {
-            if (px > pond.x - pond.width / 2 && px < pond.x + pond.width / 2 &&
-                Math.abs(py - CONFIG.GROUND_Y) < 30) {
-                this.stats.thirst = Math.min(CONFIG.MAX_THIRST, 
-                    this.stats.thirst + CONFIG.POND_RESTORE_RATE * (1/60));
-            }
-        });
-    }
-    
-    handleEnemySpawning() {
-        this.spawnZones.forEach(zone => {
-            if (!zone.triggered && Math.abs(this.player.x - zone.x) < 200) {
-                if (this.enemies.countActive() < 8) {
-                    this.spawnEnemy(zone.x + Phaser.Math.Between(-50, 50));
-                }
-                zone.triggered = true;
-            }
-        });
-    }
-    
-    spawnEnemy(x) {
-        const enemy = this.physics.add.sprite(x, CONFIG.GROUND_Y - 60, 'spino');
-        enemy.setScale(0.95);
-        enemy.setDepth(45);
-        enemy.setCollideWorldBounds(true);
-        enemy.body.setGravityY(900);
-        enemy.body.setSize(40, 45);
-        enemy.body.setOffset(10, 10);
-        
-        enemy.health = CONFIG.ENEMY_HEALTH;
-        enemy.maxHealth = CONFIG.ENEMY_HEALTH;
-        enemy.state = 'patrol';
-        enemy.patrolDir = Phaser.Math.Between(0, 1) ? 1 : -1;
-        enemy.patrolTimer = Phaser.Math.Between(2000, 4000);
-        enemy.attackCooldown = 0;
-        enemy.isAttacking = false;
-        enemy.sawPlayer = false;
-        enemy.facing = enemy.patrolDir;
-        enemy.flashTimer = 0;
-        
-        this.enemies.add(enemy);
-        this.physics.add.collider(enemy, this.groundBody);
-    }
-    
-    updateEnemies(dt) {
-        this.enemies.children.each(enemy => {
-            if (!enemy.active) return;
-            
-            const dx = this.player.x - enemy.x;
-            const dist = Math.abs(dx);
-            
-            // Attack cooldown
-            if (enemy.attackCooldown > 0) {
-                enemy.attackCooldown -= dt * 1000;
-            }
-            
-            // State machine
-            if (enemy.isAttacking) {
-                enemy.setVelocityX(0);
-                return;
-            }
-            
-            // Can see player?
-            const canSee = dist < CONFIG.ENEMY_SIGHT && 
-                          ((dx > 0 && enemy.facing === 1) || (dx < 0 && enemy.facing === -1));
-            
-            if (canSee || (enemy.sawPlayer && dist < CONFIG.ENEMY_SIGHT * 1.5)) {
-                enemy.sawPlayer = true;
-                enemy.state = 'chase';
-                enemy.facing = dx > 0 ? 1 : -1;
-                enemy.setFlipX(enemy.facing === -1);
-                
-                // Chase or attack
-                if (dist < CONFIG.ENEMY_ATTACK_RANGE && enemy.attackCooldown <= 0) {
-                    // Attack
-                    enemy.isAttacking = true;
-                    enemy.setVelocityX(0);
-                    enemy.attackCooldown = 800;
-                    
-                    this.time.delayedCall(400, () => {
-                        enemy.isAttacking = false;
-                    });
-                } else {
-                    // Chase
-                    enemy.setVelocityX(enemy.facing * CONFIG.ENEMY_CHASE_SPEED);
-                }
-            } else {
-                // Patrol
-                enemy.state = 'patrol';
-                enemy.sawPlayer = false;
-                enemy.patrolTimer -= dt * 1000;
-                
-                if (enemy.patrolTimer <= 0) {
-                    enemy.patrolDir *= -1;
-                    enemy.patrolTimer = Phaser.Math.Between(2000, 4000);
-                }
-                
-                enemy.facing = enemy.patrolDir;
-                enemy.setFlipX(enemy.facing === -1);
-                enemy.setVelocityX(enemy.patrolDir * CONFIG.ENEMY_SPEED);
-            }
-            
-            // Keep in bounds
-            if (enemy.x < 30) {
-                enemy.x = 30;
-                enemy.patrolDir = 1;
-            }
-            if (enemy.x > CONFIG.LEVEL_WIDTH - 30) {
-                enemy.x = CONFIG.LEVEL_WIDTH - 30;
-                enemy.patrolDir = -1;
-            }
-        });
-        
-        // Draw enemy health bars
-        this.enemies.children.each(enemy => {
-            if (!enemy.active || enemy.health >= enemy.maxHealth) return;
-            
-            // Remove old health bar if exists
-            if (enemy.healthBar) {
-                enemy.healthBar.destroy();
-            }
-            
-            // Create new health bar
-            const hpBar = this.add.graphics();
-            const bw = 35, bh = 5;
-            const bx = enemy.x - bw / 2;
-            const by = enemy.y - 35;
-            
-            hpBar.fillStyle(0x222222);
-            hpBar.fillRect(bx, by, bw, bh);
-            
-            const hp = enemy.health / enemy.maxHealth;
-            const color = hp > 0.5 ? 0x44aa44 : hp > 0.25 ? 0xaaaa44 : 0xaa4444;
-            hpBar.fillStyle(color);
-            hpBar.fillRect(bx + 1, by + 1, (bw - 2) * hp, bh - 2);
-            
-            hpBar.setDepth(100);
-            enemy.healthBar = hpBar;
-        });
-    }
-    
-    showGameOver() {
-        // Darken screen
-        const overlay = this.add.graphics();
-        overlay.fillStyle(0x000000, 0.75);
-        overlay.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
-        overlay.setScrollFactor(0);
-        overlay.setDepth(2000);
-        
-        // Game over text
-        const gameOverText = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 - 15, 'GAME OVER', {
-            fontFamily: '"Press Start 2P"',
-            fontSize: '16px',
-            color: '#ff4444'
-        });
-        gameOverText.setOrigin(0.5);
-        gameOverText.setScrollFactor(0);
-        gameOverText.setDepth(2001);
-        
-        const restartText = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 20, 
-            'Press Z or tap ATTACK to restart', {
-            fontFamily: '"Press Start 2P"',
-            fontSize: '8px',
-            color: '#ffffff'
-        });
-        restartText.setOrigin(0.5);
-        restartText.setScrollFactor(0);
-        restartText.setDepth(2001);
-    }
-}
+        const set = p => { this.keys[key] = p; el.classList.toggle('pressed', p); };
+        el.addEventListener('touchstart', e => { e.preventDefault(); set(true); });
+        el.addEventListener('touchend', e => { e.preventDefault(); set(false); });
+        el.addEventListener('touchcancel', e => { e.preventDefault(); set(false); });
+        el.addEventListener('mousedown', e => { e.preventDefault(); set(true); });
+        el.addEventListener('mouseup', e => { e.preventDefault(); set(false); });
+        el.addEventListener('mouseleave', () => set(false));
+      },
+      isAttackJustPressed() {
+        if (this.keys.attack && !this.attackPressed) { this.attackPressed = true; return true; }
+        if (!this.keys.attack) this.attackPressed = false;
+        return false;
+      },
+      isShootJustPressed() {
+        if (this.keys.shoot && !this.shootPressed) { this.shootPressed = true; return true; }
+        if (!this.keys.shoot) this.shootPressed = false;
+        return false;
+      }
+    };
 
-// ============================================================
-// GAME INITIALIZATION
-// ============================================================
-const game = new Phaser.Game({
-    type: Phaser.AUTO,
-    width: CONFIG.WIDTH,
-    height: CONFIG.HEIGHT,
-    parent: 'game-container',
-    backgroundColor: '#0a0a12',
-    pixelArt: true,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 },
-            debug: false
+    // ============================================
+    // SPRITE RENDERER
+    // ============================================
+    const SpriteRenderer = {
+      px(ctx, x, y, w, h, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+      },
+
+      drawRaptor(ctx, state, animFrame, facing, attackPhase = 0, flashTimer = 0, hasArmor = false, deathPhase = 0) {
+        const C = RAPTOR_COLORS;
+        const time = Date.now() / 1000;
+        const isWalking = state === 'walk';
+        const isAttacking = state === 'attack';
+        const isDying = state === 'dying';
+        
+        if (isDying) {
+          ctx.save();
+          ctx.translate(24, 28);
+          ctx.rotate(deathPhase * Math.PI * 0.5);
+          ctx.translate(-24, -28);
+          ctx.globalAlpha = 1 - (deathPhase * 0.7);
         }
-    },
-    scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    scene: [BootScene, GameScene]
-});
-</script>
+        
+        const walkPhase = animFrame * Math.PI * 0.5;
+        const bob = isWalking ? Math.sin(walkPhase * 2) * 3 : 0;
+        const legAnim = isWalking ? Math.sin(walkPhase) * 8 : 0;
+        const legAnimBack = isWalking ? Math.sin(walkPhase + Math.PI) * 8 : 0;
+        const tailWag = isWalking ? Math.sin(walkPhase) * 5 : Math.sin(time * 2) * 1;
+        const headBob = isWalking ? Math.sin(walkPhase * 2 + 0.5) * 2 : 0;
+        const breathe = Math.sin(time * 2) * 1.5;
+        const idleShift = !isWalking && !isAttacking ? Math.sin(time * 0.8) * 1 : 0;
+
+        ctx.save();
+        if (facing === -1) { ctx.scale(-1, 1); ctx.translate(-48, 0); }
+
+        this.px(ctx, 2, 22 + bob + tailWag * 0.3, 8, 10, C.scalesMid);
+        this.px(ctx, 3, 24 + bob + tailWag * 0.3, 6, 6, C.scalesLight);
+        this.px(ctx, -1, 20 + bob + tailWag * 0.6, 6, 8, C.scalesMid);
+        this.px(ctx, -4, 21 + bob + tailWag * 0.9, 5, 5, C.scalesDark);
+        this.px(ctx, -7, 22 + bob + tailWag, 4, 4, C.scalesDark);
+
+        this.px(ctx, 10, 34 + bob, 10, 8, C.scalesMid);
+        const backLegY = 40 + bob + legAnimBack * 0.3;
+        this.px(ctx, 8 + legAnimBack * 0.2, backLegY, 8, 10, C.scalesMid);
+        const backFootY = 48 + bob + Math.max(0, -legAnimBack * 0.5);
+        this.px(ctx, 6, backFootY, 12, 4, C.scalesDark);
+        this.px(ctx, 5, backFootY + 2, 3, 3, C.clawDark);
+        this.px(ctx, 13, backFootY + 2, 3, 3, C.clawDark);
+        this.px(ctx, 16, backFootY - 2, 3, 5, C.clawLight);
+
+        this.px(ctx, 10, 24 + bob + breathe + idleShift, 26, 16, C.scalesMid);
+        this.px(ctx, 12, 26 + bob + breathe + idleShift, 22, 12, C.scalesLight);
+        this.px(ctx, 14, 18 + bob + breathe, 22, 10, C.scalesMid);
+        this.px(ctx, 16, 20 + bob + breathe, 18, 6, C.scalesLight);
+        this.px(ctx, 18, 19 + bob + breathe, 14, 3, C.scalesHighlight);
+        this.px(ctx, 16, 28 + bob + breathe, 4, 8, C.stripeDark);
+        this.px(ctx, 24, 26 + bob + breathe, 4, 10, C.stripeDark);
+        this.px(ctx, 32, 24 + bob + breathe, 3, 8, C.stripeDark);
+        this.px(ctx, 16, 34 + bob + breathe * 1.5, 16, 6 + breathe * 0.5, C.bellyMid);
+        this.px(ctx, 18, 35 + bob + breathe * 1.5, 12, 4, C.bellyLight);
+
+        if (hasArmor) {
+          ctx.fillStyle = 'rgba(100, 120, 140, 0.6)';
+          ctx.fillRect(12, 22 + bob + breathe, 24, 14);
+          ctx.fillStyle = '#8090a0';
+          ctx.fillRect(14, 24 + bob + breathe, 4, 10);
+          ctx.fillRect(26, 24 + bob + breathe, 4, 10);
+        }
+
+        this.px(ctx, 28, 34 + bob, 8, 6, C.scalesMid);
+        const frontLegY = 38 + bob + legAnim * 0.3;
+        this.px(ctx, 30 - legAnim * 0.2, frontLegY, 6, 10, C.scalesMid);
+        const frontFootY = 46 + bob + Math.max(0, -legAnim * 0.5);
+        this.px(ctx, 28, frontFootY, 10, 4, C.scalesDark);
+        this.px(ctx, 27, frontFootY + 2, 3, 3, C.clawDark);
+        this.px(ctx, 35, frontFootY + 2, 3, 3, C.clawDark);
+
+        let armExtend = 0, armAngleY = 0;
+        if (isAttacking && attackPhase > 0) {
+          const slashNum = Math.floor(attackPhase * 3);
+          const slashProgress = (attackPhase * 3) % 1;
+          if (slashNum === 0) { armExtend = 10 + slashProgress * 6; armAngleY = -6 + slashProgress * 4; }
+          else if (slashNum === 1) { armExtend = 12 + slashProgress * 4; armAngleY = 0; }
+          else { armExtend = 10 + slashProgress * 6; armAngleY = 4 + slashProgress * 4; }
+        }
+        
+        this.px(ctx, 32 + armExtend * 0.2, 24 + bob + armAngleY * 0.3, 6, 5, C.scalesMid);
+        this.px(ctx, 36 + armExtend * 0.4, 22 + bob + armAngleY * 0.5, 8 + armExtend * 0.5, 4, C.scalesMid);
+        if (armExtend > 5) {
+          this.px(ctx, 48 + armExtend, 18 + bob + armAngleY, 5, 3, C.clawDark);
+          this.px(ctx, 48 + armExtend, 22 + bob + armAngleY, 5, 3, C.clawDark);
+          this.px(ctx, 48 + armExtend, 26 + bob + armAngleY, 5, 3, C.clawDark);
+          this.px(ctx, 51 + armExtend, 20 + bob + armAngleY, 3, 2, C.clawLight);
+        } else {
+          this.px(ctx, 44, 20 + bob, 4, 3, C.clawDark);
+          this.px(ctx, 44, 24 + bob, 4, 3, C.clawDark);
+        }
+
+        this.px(ctx, 32, 12 + bob + breathe + headBob * 0.5, 10, 14, C.scalesMid);
+        this.px(ctx, 34, 14 + bob + breathe + headBob * 0.5, 6, 10, C.scalesLight);
+        this.px(ctx, 35, 16 + bob + breathe + headBob * 0.5, 4, 6, C.scalesHighlight);
+
+        const headY = 4 + bob + headBob;
+        this.px(ctx, 34, headY, 16, 14, C.scalesMid);
+        this.px(ctx, 36, headY + 2, 12, 10, C.scalesLight);
+        this.px(ctx, 46, headY + 4, 8, 8, C.scalesMid);
+        this.px(ctx, 47, headY + 5, 6, 5, C.scalesLight);
+        this.px(ctx, 44, headY + 2, 8, 3, C.scalesDark);
+        this.px(ctx, 42, headY + 10, 12, 5, C.scalesMid);
+        this.px(ctx, 49, headY + 11, 2, 3, C.teeth);
+        this.px(ctx, 52, headY + 11, 2, 2, C.teeth);
+        this.px(ctx, 38, headY + 2, 8, 8, C.scalesDark);
+        this.px(ctx, 39, headY + 3, 6, 6, C.eyeRing);
+        this.px(ctx, 40, headY + 4, 4, 4, C.eye);
+        this.px(ctx, 42, headY + 4, 2, 4, C.pupil);
+        this.px(ctx, 40, headY + 4, 1, 1, C.eyeShine);
+
+        ctx.restore();
+
+        if (isDying) ctx.restore();
+
+        if (flashTimer > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'source-atop';
+          ctx.fillStyle = `rgba(255, 50, 50, ${flashTimer * 2})`;
+          ctx.fillRect(0, 0, 60, 56);
+          ctx.restore();
+        }
+      },
+
+      drawBabySpino(ctx, state, animFrame, facing, flashTimer = 0, deathPhase = 0) {
+        const C = SPINO_COLORS;
+        const time = Date.now() / 1000;
+        const isWalking = state === 'walk' || state === 'chase';
+        const isAttacking = state === 'attack';
+        const isDying = state === 'dying';
+        
+        if (isDying) {
+          ctx.save();
+          ctx.translate(25, 40);
+          ctx.rotate(deathPhase * Math.PI * 0.5);
+          ctx.translate(-25, -40);
+          ctx.globalAlpha = 1 - (deathPhase * 0.7);
+        }
+
+        const walkPhase = animFrame * Math.PI * 0.5;
+        const bob = isWalking ? Math.sin(walkPhase * 2) * 2 : 0;
+        const legAnim = isWalking ? Math.sin(walkPhase) * 6 : 0;
+        const legAnimBack = isWalking ? Math.sin(walkPhase + Math.PI) * 6 : 0;
+        const tailWag = isWalking ? Math.sin(walkPhase) * 4 : Math.sin(time * 2) * 1;
+        const breathe = Math.sin(time * 2.5) * 1;
+
+        ctx.save();
+        if (facing === -1) { ctx.scale(-1, 1); ctx.translate(-50, 0); }
+
+        this.px(ctx, -4, 26 + bob + tailWag, 10, 6, C.scalesMid);
+        this.px(ctx, 4, 24 + bob + tailWag * 0.6, 8, 8, C.scalesMid);
+
+        this.px(ctx, 12, 34 + bob, 8, 7, C.scalesMid);
+        this.px(ctx, 10, 40 + bob + legAnimBack * 0.3, 7, 10, C.scalesMid);
+        this.px(ctx, 8, 48 + bob + Math.max(0, -legAnimBack * 0.4), 10, 4, C.scalesDark);
+        this.px(ctx, 7, 50 + bob, 3, 3, C.clawDark);
+        this.px(ctx, 15, 50 + bob, 3, 3, C.clawDark);
+
+        this.px(ctx, 10, 26 + bob + breathe, 24, 14, C.scalesMid);
+        this.px(ctx, 12, 28 + bob + breathe, 20, 10, C.scalesLight);
+        this.px(ctx, 14, 20 + bob + breathe, 20, 10, C.scalesMid);
+        this.px(ctx, 16, 34 + bob + breathe, 14, 5, C.bellyMid);
+
+        for (let i = 0; i < 6; i++) {
+          const sh = 12 + Math.sin(i * 0.8) * 4;
+          this.px(ctx, 14 + i * 4, 10 + bob - sh + breathe, 2, sh, C.sailSpine);
+        }
+        this.px(ctx, 14, 6 + bob + breathe, 24, 14, C.sailMid);
+        this.px(ctx, 16, 8 + bob + breathe, 20, 10, C.sailLight);
+        this.px(ctx, 18, 10 + bob + breathe, 2, 6, C.sailDark);
+        this.px(ctx, 24, 8 + bob + breathe, 2, 8, C.sailDark);
+
+        this.px(ctx, 28, 34 + bob, 6, 5, C.scalesMid);
+        this.px(ctx, 29, 38 + bob + legAnim * 0.3, 5, 10, C.scalesMid);
+        this.px(ctx, 27, 46 + bob + Math.max(0, -legAnim * 0.4), 8, 4, C.scalesDark);
+        this.px(ctx, 26, 48 + bob, 3, 3, C.clawDark);
+        this.px(ctx, 33, 48 + bob, 3, 3, C.clawDark);
+
+        const armExt = isAttacking ? 5 : 0;
+        this.px(ctx, 32 + armExt * 0.3, 28 + bob, 4, 4, C.scalesMid);
+        this.px(ctx, 35 + armExt * 0.6, 27 + bob, 5 + armExt * 0.3, 3, C.scalesMid);
+
+        this.px(ctx, 32, 18 + bob + breathe, 8, 14, C.scalesMid);
+
+        const biteOpen = isAttacking ? 4 : 0;
+        this.px(ctx, 36, 14 + bob, 12, 10, C.scalesMid);
+        this.px(ctx, 46, 16 + bob - biteOpen * 0.2, 12, 6, C.scalesMid);
+        this.px(ctx, 44, 22 + bob + biteOpen, 14, 4, C.scalesMid);
+        this.px(ctx, 48, 22 + bob, 2, 3, C.teeth);
+        this.px(ctx, 52, 22 + bob, 2, 2, C.teeth);
+        this.px(ctx, 38, 14 + bob, 6, 6, C.scalesDark);
+        this.px(ctx, 39, 15 + bob, 4, 4, C.eyeRing);
+        this.px(ctx, 40, 16 + bob, 3, 3, C.eye);
+        this.px(ctx, 41, 16 + bob, 2, 3, C.pupil);
+        this.px(ctx, 40, 16 + bob, 1, 1, C.eyeShine);
+
+        ctx.restore();
+
+        if (isDying) ctx.restore();
+
+        if (flashTimer > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'source-atop';
+          ctx.fillStyle = `rgba(255, 50, 50, ${flashTimer * 2})`;
+          ctx.fillRect(0, 0, 45, 40);
+          ctx.restore();
+        }
+      }
+    };
+
+    // ============================================
+    // BACKGROUND
+    // ============================================
+    const Background = {
+      trees: [], rocks: [], bushes: [], puddles: [], ponds: [],
+      flowers: [], mushrooms: [], logs: [], clouds: [], palmTrees: [],
+      
+      init() {
+        for (let i = 0; i < 8; i++) {
+          this.clouds.push({ x: i * 400 + Math.random() * 200, y: 20 + Math.random() * 40, 
+                            size: 30 + Math.random() * 40, speed: 5 + Math.random() * 10 });
+        }
+        for (let i = 0; i < 60; i++) {
+          this.trees.push({ x: i * 100 + Math.random() * 50, height: 50 + Math.random() * 30, 
+                           width: 30 + Math.random() * 15, type: Math.floor(Math.random() * 3) });
+        }
+        for (let i = 0; i < 20; i++) {
+          this.palmTrees.push({ x: 150 + i * 200 + Math.random() * 100, height: 60 + Math.random() * 20 });
+        }
+        for (let i = 0; i < 35; i++) {
+          this.rocks.push({ x: i * 140 + Math.random() * 80, size: 10 + Math.random() * 15 });
+        }
+        for (let i = 0; i < 70; i++) {
+          const types = ['red', 'pink', 'yellow', 'white'];
+          this.flowers.push({ x: i * 60 + Math.random() * 40, type: types[Math.floor(Math.random() * 4)] });
+        }
+        for (let i = 0; i < 28; i++) {
+          this.mushrooms.push({ x: 80 + i * 150 + Math.random() * 80, size: 6 + Math.random() * 4 });
+        }
+        for (let i = 0; i < 18; i++) {
+          this.logs.push({ x: 200 + i * 250 + Math.random() * 100, length: 20 + Math.random() * 15 });
+        }
+        for (let i = 0; i < 28; i++) {
+          this.bushes.push({ x: 200 + i * 140 + Math.random() * 60, collected: false });
+        }
+        for (let i = 0; i < 16; i++) {
+          this.puddles.push({ x: 300 + i * 220 + Math.random() * 100, collected: false, respawnTimer: 0 });
+        }
+        this.ponds.push({ x: 500, points: this.generatePondShape(90, 35) });
+        this.ponds.push({ x: 1300, points: this.generatePondShape(110, 40) });
+        this.ponds.push({ x: 2200, points: this.generatePondShape(80, 30) });
+        this.ponds.push({ x: 3400, points: this.generatePondShape(95, 38) });
+      },
+
+      generatePondShape(width, height) {
+        const points = [];
+        const segments = 16;
+        for (let i = 0; i <= segments; i++) {
+          const angle = (i / segments) * Math.PI * 2;
+          const rx = width / 2 + Math.sin(i * 3.7) * 8 + Math.cos(i * 2.3) * 6;
+          const ry = height / 2 + Math.sin(i * 2.9) * 5 + Math.cos(i * 4.1) * 4;
+          points.push({ x: Math.cos(angle) * rx, y: Math.sin(angle) * ry * 0.4 });
+        }
+        return points;
+      },
+
+      draw(ctx, camera, width, height) {
+        const P = PALETTE;
+        const groundY = height - CONFIG.GROUND_HEIGHT;
+        const stoneY = height - CONFIG.GROUND_STONE_HEIGHT;
+
+        // Sky with day/night
+        const skyColors = DayNight.getSkyColors();
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+        skyGrad.addColorStop(0, skyColors.top);
+        skyGrad.addColorStop(0.5, skyColors.mid);
+        skyGrad.addColorStop(0.8, skyColors.bottom);
+        skyGrad.addColorStop(1, skyColors.horizon);
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, width, groundY);
+
+        // Stars and moon at night
+        DayNight.drawStars(ctx, camera, width, height);
+        DayNight.drawMoon(ctx, width, height);
+
+        // Birds flying
+        Birds.draw(ctx, camera);
+
+        this.drawClouds(ctx, camera, width);
+        this.drawMountains(ctx, camera, width, groundY);
+
+        ctx.fillStyle = P.jungleFar;
+        this.drawJungleLayer(ctx, camera, width, groundY, 0.25, 0.6);
+        ctx.fillStyle = P.jungleMid;
+        this.drawJungleLayer(ctx, camera, width, groundY, 0.4, 0.75);
+        ctx.fillStyle = P.jungleNear;
+        this.drawJungleLayer(ctx, camera, width, groundY, 0.55, 0.9);
+
+        this.drawPalmTrees(ctx, camera, groundY, 0.6);
+        this.drawTrees(ctx, camera, width, groundY);
+
+        const grassGrad = ctx.createLinearGradient(0, groundY, 0, stoneY);
+        grassGrad.addColorStop(0, P.grassTop);
+        grassGrad.addColorStop(0.3, P.grassMid);
+        grassGrad.addColorStop(0.7, P.dirtLight);
+        grassGrad.addColorStop(1, P.dirtMid);
+        ctx.fillStyle = grassGrad;
+        ctx.fillRect(0, groundY, width, CONFIG.GROUND_HEIGHT - CONFIG.GROUND_STONE_HEIGHT);
+
+        ctx.fillStyle = P.leafHighlight;
+        ctx.fillRect(0, groundY, width, 2);
+        ctx.fillStyle = P.grassDark;
+        ctx.fillRect(0, groundY + 3, width, 1);
+
+        this.drawStoneBorder(ctx, camera, width, stoneY, height);
+        this.drawPonds(ctx, camera, groundY);
+        this.drawPuddles(ctx, camera, groundY);
+        this.drawFlowers(ctx, camera, groundY);
+        this.drawMushrooms(ctx, camera, groundY);
+        this.drawLogs(ctx, camera, groundY);
+        this.drawGrass(ctx, camera, width, groundY);
+        this.drawRocks(ctx, camera, groundY);
+        this.drawBushes(ctx, camera, groundY);
+      },
+
+      drawClouds(ctx, camera, width) {
+        const P = PALETTE;
+        const time = Date.now() / 1000;
+        for (const cloud of this.clouds) {
+          const sx = (cloud.x + time * cloud.speed) % (CONFIG.LEVEL_WIDTH + 400) - 200;
+          const screenX = sx - camera.x * 0.1;
+          if (screenX < -100 || screenX > width + 100) continue;
+          
+          ctx.fillStyle = P.cloudMid;
+          ctx.beginPath();
+          ctx.arc(screenX, cloud.y, cloud.size * 0.6, 0, Math.PI * 2);
+          ctx.arc(screenX - cloud.size * 0.5, cloud.y + 5, cloud.size * 0.4, 0, Math.PI * 2);
+          ctx.arc(screenX + cloud.size * 0.5, cloud.y + 3, cloud.size * 0.5, 0, Math.PI * 2);
+          ctx.arc(screenX + cloud.size * 0.9, cloud.y + 8, cloud.size * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.cloudLight;
+          ctx.beginPath();
+          ctx.arc(screenX - 5, cloud.y - 5, cloud.size * 0.4, 0, Math.PI * 2);
+          ctx.arc(screenX + cloud.size * 0.4, cloud.y - 2, cloud.size * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawMountains(ctx, camera, width, groundY) {
+        const P = PALETTE;
+        const layers = [
+          { parallax: 0.08, color: P.mountainFar, height: 90, spacing: 220 },
+          { parallax: 0.12, color: P.mountainMid, height: 70, spacing: 170 },
+          { parallax: 0.18, color: P.mountainNear, height: 55, spacing: 130 }
+        ];
+        for (const l of layers) {
+          const offset = (camera.x * l.parallax) % l.spacing;
+          for (let i = -1; i < width / l.spacing + 2; i++) {
+            const mx = i * l.spacing - offset;
+            const mh = l.height + Math.sin(i * 1.5) * 25;
+            
+            ctx.fillStyle = l.color;
+            ctx.beginPath();
+            ctx.moveTo(mx - l.spacing * 0.7, groundY);
+            ctx.lineTo(mx, groundY - mh);
+            ctx.lineTo(mx + l.spacing * 0.7, groundY);
+            ctx.fill();
+            
+            if (l.height > 60) {
+              ctx.fillStyle = P.mountainSnow;
+              ctx.beginPath();
+              ctx.moveTo(mx - 12, groundY - mh + 18);
+              ctx.lineTo(mx, groundY - mh);
+              ctx.lineTo(mx + 12, groundY - mh + 18);
+              ctx.lineTo(mx + 5, groundY - mh + 15);
+              ctx.lineTo(mx, groundY - mh + 20);
+              ctx.lineTo(mx - 5, groundY - mh + 15);
+              ctx.fill();
+            }
+          }
+        }
+      },
+
+      drawJungleLayer(ctx, camera, width, groundY, parallax, heightFactor) {
+        const offset = (camera.x * parallax) % 60;
+        for (let i = -1; i < width / 30 + 2; i++) {
+          const x = i * 30 - offset;
+          const h = (35 + Math.sin(i * 2.3) * 15) * heightFactor;
+          ctx.beginPath();
+          ctx.arc(x + 15, groundY - h * 0.5, h * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawPalmTrees(ctx, camera, groundY, parallax) {
+        const P = PALETTE;
+        const offset = camera.x * parallax;
+        const time = Date.now() / 1000;
+        
+        for (const palm of this.palmTrees) {
+          const sx = palm.x - offset;
+          if (sx < -60 || sx > CONFIG.CANVAS_WIDTH + 60) continue;
+          
+          ctx.fillStyle = P.palmTrunk;
+          ctx.beginPath();
+          ctx.moveTo(sx - 4, groundY);
+          ctx.quadraticCurveTo(sx + 8, groundY - palm.height * 0.5, sx + 3, groundY - palm.height);
+          ctx.lineTo(sx + 7, groundY - palm.height);
+          ctx.quadraticCurveTo(sx + 12, groundY - palm.height * 0.5, sx + 4, groundY);
+          ctx.fill();
+          
+          ctx.fillStyle = P.trunkDark;
+          for (let j = 0; j < 5; j++) {
+            const segY = groundY - palm.height * 0.2 * (j + 1);
+            ctx.fillRect(sx - 2 + j * 0.5, segY, 8 - j * 0.3, 2);
+          }
+          
+          const frondCount = 7;
+          for (let j = 0; j < frondCount; j++) {
+            const angle = (j / frondCount) * Math.PI * 2;
+            const frondLen = 25 + Math.sin(j * 2) * 8;
+            // Animate leaves gently
+            const sway = Math.sin(time * 1.5 + j) * 0.1;
+            
+            ctx.fillStyle = j % 2 === 0 ? P.palmLeaf : P.palmLeafLight;
+            ctx.beginPath();
+            ctx.moveTo(sx + 5, groundY - palm.height);
+            const endX = sx + 5 + Math.cos(angle + sway) * frondLen;
+            const endY = groundY - palm.height + Math.sin(angle + sway) * frondLen * 0.6 - 5;
+            ctx.quadraticCurveTo(sx + 5 + Math.cos(angle + sway) * frondLen * 0.5, 
+                                 groundY - palm.height - 10,
+                                 endX, endY);
+            ctx.quadraticCurveTo(sx + 5 + Math.cos(angle + sway) * frondLen * 0.5,
+                                 groundY - palm.height - 5,
+                                 sx + 5, groundY - palm.height);
+            ctx.fill();
+          }
+        }
+      },
+
+      drawTrees(ctx, camera, width, groundY) {
+        const P = PALETTE;
+        const offset = camera.x * 0.7;
+        const time = Date.now() / 1000;
+        
+        for (const tree of this.trees) {
+          const sx = tree.x - offset;
+          if (sx < -60 || sx > width + 60) continue;
+          
+          const trunkW = tree.width * 0.25;
+          const trunkH = tree.height * 0.6;
+          
+          ctx.fillStyle = P.trunkDark;
+          ctx.beginPath();
+          ctx.moveTo(sx + tree.width * 0.35, groundY);
+          ctx.lineTo(sx + tree.width * 0.35 - 2, groundY - trunkH);
+          ctx.lineTo(sx + tree.width * 0.65 + 2, groundY - trunkH);
+          ctx.lineTo(sx + tree.width * 0.65, groundY);
+          ctx.fill();
+          
+          ctx.fillStyle = P.trunkMid;
+          ctx.fillRect(sx + tree.width * 0.4, groundY - trunkH + 5, trunkW * 0.4, trunkH - 10);
+          
+          ctx.fillStyle = P.trunkDark;
+          for (let i = 0; i < 4; i++) {
+            ctx.fillRect(sx + tree.width * 0.38, groundY - trunkH * 0.2 * (i + 1), trunkW + 4, 2);
+          }
+          
+          ctx.strokeStyle = P.trunkDark;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(sx + tree.width * 0.4, groundY - trunkH * 0.7);
+          ctx.quadraticCurveTo(sx + tree.width * 0.1, groundY - trunkH * 0.8, sx + tree.width * 0.05, groundY - trunkH * 0.9);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(sx + tree.width * 0.6, groundY - trunkH * 0.6);
+          ctx.quadraticCurveTo(sx + tree.width * 0.9, groundY - trunkH * 0.65, sx + tree.width * 0.95, groundY - trunkH * 0.75);
+          ctx.stroke();
+          
+          const leafColors = [P.leafDark, P.leafMid, P.leafLight];
+          
+          // Animate leaves with gentle sway
+          const leafSway = Math.sin(time * 0.8 + tree.x * 0.01) * 2;
+          
+          for (let layer = 0; layer < 3; layer++) {
+            ctx.fillStyle = leafColors[layer];
+            ctx.beginPath();
+            ctx.arc(sx + tree.width * 0.5 + leafSway, groundY - tree.height + 10 + layer * 4, 
+                   tree.width * 0.5 - layer * 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sx + tree.width * 0.2 + leafSway * 0.5, groundY - tree.height + 20 + layer * 3, 
+                   tree.width * 0.35 - layer * 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sx + tree.width * 0.8 + leafSway * 0.5, groundY - tree.height + 18 + layer * 3, 
+                   tree.width * 0.38 - layer * 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sx + tree.width * 0.5 + leafSway, groundY - tree.height - 5 + layer * 5, 
+                   tree.width * 0.3 - layer * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.fillStyle = P.leafHighlight;
+          for (let i = 0; i < 6; i++) {
+            const hx = sx + tree.width * (0.2 + Math.sin(i * 1.3) * 0.3 + 0.3) + leafSway;
+            const hy = groundY - tree.height + 5 + Math.cos(i * 1.7) * 15;
+            ctx.beginPath();
+            ctx.arc(hx, hy, 4 + Math.sin(i) * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          ctx.beginPath();
+          ctx.ellipse(sx + tree.width * 0.5, groundY - 2, tree.width * 0.7, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawStoneBorder(ctx, camera, width, stoneY, height) {
+        const P = PALETTE;
+        const brickWidth = 20;
+        const brickHeight = CONFIG.GROUND_STONE_HEIGHT;
+        const offset = (camera.x * 0.95) % (brickWidth * 2);
+        
+        for (let i = -1; i < width / brickWidth + 2; i++) {
+          const bx = i * brickWidth - offset;
+          const row = Math.floor(i / 2) % 2;
+          const offsetX = row * brickWidth * 0.5;
+          
+          ctx.fillStyle = P.stoneMid;
+          ctx.fillRect(bx + offsetX % brickWidth, stoneY, brickWidth - 1, brickHeight - 1);
+          ctx.fillStyle = P.stoneLight;
+          ctx.fillRect(bx + offsetX % brickWidth, stoneY, brickWidth - 1, 2);
+          ctx.fillRect(bx + offsetX % brickWidth, stoneY, 2, brickHeight - 1);
+          ctx.fillStyle = P.stoneDark;
+          ctx.fillRect(bx + offsetX % brickWidth + brickWidth - 3, stoneY + 2, 2, brickHeight - 3);
+          ctx.fillRect(bx + offsetX % brickWidth + 2, stoneY + brickHeight - 3, brickWidth - 3, 2);
+        }
+      },
+
+      drawPonds(ctx, camera, groundY) {
+        const P = PALETTE;
+        const time = Date.now() / 1000;
+        
+        for (const pond of this.ponds) {
+          const sx = pond.x - camera.x;
+          if (sx < -150 || sx > CONFIG.CANVAS_WIDTH + 150) continue;
+          
+          ctx.fillStyle = P.waterDeep;
+          ctx.beginPath();
+          ctx.moveTo(sx + pond.points[0].x, groundY + pond.points[0].y);
+          for (let i = 1; i < pond.points.length; i++) {
+            ctx.lineTo(sx + pond.points[i].x, groundY + pond.points[i].y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          
+          ctx.fillStyle = P.waterMid;
+          ctx.beginPath();
+          ctx.moveTo(sx + pond.points[0].x * 0.85, groundY + pond.points[0].y * 0.8);
+          for (let i = 1; i < pond.points.length; i++) {
+            ctx.lineTo(sx + pond.points[i].x * 0.85, groundY + pond.points[i].y * 0.8);
+          }
+          ctx.closePath();
+          ctx.fill();
+          
+          ctx.fillStyle = P.waterSurface;
+          ctx.beginPath();
+          ctx.ellipse(sx, groundY - 2, 30 + Math.sin(time * 2) * 3, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.strokeStyle = P.waterFoam;
+          ctx.lineWidth = 1;
+          for (let r = 0; r < 3; r++) {
+            const ripplePhase = (time * 2 + r * 0.8) % 3;
+            const rippleSize = ripplePhase * 15;
+            const rippleAlpha = 1 - ripplePhase / 3;
+            ctx.globalAlpha = rippleAlpha * 0.5;
+            ctx.beginPath();
+            ctx.ellipse(sx - 10 + r * 15, groundY - 1, rippleSize, rippleSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          
+          ctx.fillStyle = P.waterShine;
+          ctx.fillRect(sx - 20 + Math.sin(time) * 5, groundY - 3, 4, 2);
+          ctx.fillRect(sx + 15 + Math.cos(time * 1.3) * 4, groundY - 2, 3, 2);
+        }
+      },
+
+      drawPuddles(ctx, camera, groundY) {
+        const P = PALETTE;
+        const time = Date.now() / 1000;
+        for (const puddle of this.puddles) {
+          if (puddle.collected) continue;
+          const sx = puddle.x - camera.x;
+          if (sx < -20 || sx > CONFIG.CANVAS_WIDTH + 20) continue;
+          
+          ctx.fillStyle = P.waterMid;
+          ctx.beginPath();
+          ctx.ellipse(sx, groundY + 2, 14 + Math.sin(time + puddle.x) * 2, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.waterSurface;
+          ctx.beginPath();
+          ctx.ellipse(sx - 3, groundY + 1, 6, 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.waterShine;
+          ctx.fillRect(sx - 5, groundY, 2, 1);
+        }
+      },
+
+      drawFlowers(ctx, camera, groundY) {
+        const P = PALETTE;
+        const offset = camera.x * 0.9;
+        for (const flower of this.flowers) {
+          const sx = flower.x - offset;
+          if (sx < -10 || sx > CONFIG.CANVAS_WIDTH + 10) continue;
+          
+          ctx.fillStyle = P.leafMid;
+          ctx.fillRect(sx, groundY - 8, 2, 8);
+          
+          const colors = { red: P.flowerRed, pink: P.flowerPink, yellow: P.flowerYellow, white: P.flowerWhite };
+          ctx.fillStyle = colors[flower.type];
+          ctx.beginPath();
+          ctx.arc(sx + 1, groundY - 10, 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.flowerYellow;
+          ctx.beginPath();
+          ctx.arc(sx + 1, groundY - 10, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawMushrooms(ctx, camera, groundY) {
+        const P = PALETTE;
+        const offset = camera.x * 0.9;
+        for (const mush of this.mushrooms) {
+          const sx = mush.x - offset;
+          if (sx < -15 || sx > CONFIG.CANVAS_WIDTH + 15) continue;
+          
+          ctx.fillStyle = P.mushroomStem;
+          ctx.fillRect(sx - 2, groundY - mush.size, 4, mush.size);
+          
+          ctx.fillStyle = P.mushroomCap;
+          ctx.beginPath();
+          ctx.arc(sx, groundY - mush.size - 2, mush.size, Math.PI, 0);
+          ctx.fill();
+          
+          ctx.fillStyle = P.mushroomCapLight;
+          ctx.beginPath();
+          ctx.arc(sx - 2, groundY - mush.size - 4, 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(sx + 3, groundY - mush.size - 3, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawLogs(ctx, camera, groundY) {
+        const P = PALETTE;
+        const offset = camera.x * 0.9;
+        for (const log of this.logs) {
+          const sx = log.x - offset;
+          if (sx < -30 || sx > CONFIG.CANVAS_WIDTH + 30) continue;
+          
+          ctx.fillStyle = P.logMid;
+          ctx.fillRect(sx, groundY - 6, log.length, 8);
+          
+          ctx.fillStyle = P.logLight;
+          ctx.fillRect(sx, groundY - 6, log.length, 2);
+          
+          ctx.fillStyle = P.logDark;
+          ctx.beginPath();
+          ctx.ellipse(sx, groundY - 2, 4, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = P.logLight;
+          ctx.beginPath();
+          ctx.arc(sx, groundY - 3, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawGrass(ctx, camera, width, groundY) {
+        const P = PALETTE;
+        const offset = (camera.x * 0.95) % 10;
+        const time = Date.now() / 1000;
+        
+        for (let i = 0; i < width + 20; i += 10) {
+          const gx = i - offset;
+          // Animated grass sway
+          const sway = Math.sin(time * 2 + gx * 0.1) * 1.5;
+          
+          ctx.fillStyle = P.leafMid;
+          ctx.fillRect(gx + sway * 0.3, groundY - 5, 2, 7);
+          ctx.fillRect(gx + 4 + sway * 0.5, groundY - 7, 2, 9);
+          ctx.fillStyle = P.leafLight;
+          ctx.fillRect(gx + 2 + sway * 0.7, groundY - 9, 2, 11);
+          ctx.fillRect(gx + 6 + sway * 0.4, groundY - 6, 2, 8);
+        }
+      },
+
+      drawRocks(ctx, camera, groundY) {
+        const P = PALETTE;
+        const offset = camera.x * 0.9;
+        for (const rock of this.rocks) {
+          const sx = rock.x - offset;
+          if (sx < -20 || sx > CONFIG.CANVAS_WIDTH + 20) continue;
+          
+          ctx.fillStyle = P.rockMid;
+          ctx.beginPath();
+          ctx.ellipse(sx, groundY - rock.size * 0.35, rock.size, rock.size * 0.55, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.rockLight;
+          ctx.beginPath();
+          ctx.ellipse(sx - rock.size * 0.25, groundY - rock.size * 0.55, rock.size * 0.4, rock.size * 0.25, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.rockDark;
+          ctx.beginPath();
+          ctx.ellipse(sx + rock.size * 0.3, groundY - rock.size * 0.2, rock.size * 0.3, rock.size * 0.2, 0.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      drawBushes(ctx, camera, groundY) {
+        const P = PALETTE;
+        for (const bush of this.bushes) {
+          if (bush.collected) continue;
+          const sx = bush.x - camera.x;
+          if (sx < -30 || sx > CONFIG.CANVAS_WIDTH + 30) continue;
+          
+          ctx.fillStyle = P.leafDark;
+          ctx.beginPath();
+          ctx.arc(sx, groundY - 10, 14, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = P.leafMid;
+          ctx.beginPath();
+          ctx.arc(sx - 5, groundY - 12, 9, 0, Math.PI * 2);
+          ctx.arc(sx + 6, groundY - 11, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = P.leafLight;
+          ctx.beginPath();
+          ctx.arc(sx - 2, groundY - 14, 5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = P.berry;
+          ctx.beginPath();
+          ctx.arc(sx - 7, groundY - 7, 3, 0, Math.PI * 2);
+          ctx.arc(sx + 3, groundY - 6, 3, 0, Math.PI * 2);
+          ctx.arc(sx + 9, groundY - 9, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = P.berryLight;
+          ctx.beginPath();
+          ctx.arc(sx - 8, groundY - 8, 1, 0, Math.PI * 2);
+          ctx.arc(sx + 2, groundY - 7, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    };
+
+    // ============================================
+    // PICKUPS & WEAPONS
+    // ============================================
+    class Pickup {
+      constructor(x, y, type) {
+        this.x = x; 
+        this.y = y;
+        this.type = type;
+        this.width = 24; this.height = 24;
+        this.collected = false;
+        this.lifetime = 999;
+      }
+      update(dt) {
+        return this.collected;
+      }
+      draw(ctx, camera) {
+        if (this.collected) return;
+        const sx = this.x - camera.x;
+        const sy = this.y;
+        if (sx < -40 || sx > CONFIG.CANVAS_WIDTH + 40) return;
+        
+        ctx.save();
+        ctx.translate(sx, sy);
+        
+        // Glow effect
+        const glowSize = 25 + Math.sin(Date.now() / 200) * 5;
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+        if (this.type === 'meat') {
+          gradient.addColorStop(0, 'rgba(255, 100, 100, 0.5)');
+          gradient.addColorStop(1, 'rgba(255, 100, 100, 0)');
+        } else if (this.type === 'rapidfire') {
+          gradient.addColorStop(0, 'rgba(100, 150, 255, 0.6)');
+          gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+        } else if (this.type === 'acidgun') {
+          gradient.addColorStop(0, 'rgba(100, 255, 100, 0.6)');
+          gradient.addColorStop(1, 'rgba(100, 255, 100, 0)');
+        } else if (this.type === 'boneclub') {
+          gradient.addColorStop(0, 'rgba(255, 230, 180, 0.6)');
+          gradient.addColorStop(1, 'rgba(255, 230, 180, 0)');
+        } else if (this.type === 'armor') {
+          gradient.addColorStop(0, 'rgba(150, 200, 255, 0.6)');
+          gradient.addColorStop(1, 'rgba(150, 200, 255, 0)');
+        }
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.scale(1.5, 1.5);
+        
+        if (this.type === 'meat') {
+          ctx.fillStyle = PALETTE.meat;
+          ctx.fillRect(-6, -4, 12, 8);
+          ctx.fillStyle = PALETTE.meatLight;
+          ctx.fillRect(-4, -2, 8, 4);
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(-2, -1, 3, 2);
+          ctx.fillStyle = '#e0e0d0';
+          ctx.fillRect(-8, -2, 4, 4);
+          ctx.fillRect(4, -2, 4, 4);
+        } else if (this.type === 'rapidfire') {
+          ctx.fillStyle = '#3a5a7a';
+          ctx.fillRect(-12, -4, 24, 8);
+          ctx.fillStyle = '#5a7a9a';
+          ctx.fillRect(-10, -3, 20, 6);
+          ctx.fillStyle = '#8abadf';
+          ctx.fillRect(-8, -2, 6, 4);
+          ctx.fillStyle = '#ffa500';
+          ctx.fillRect(10, -2, 4, 4);
+        } else if (this.type === 'acidgun') {
+          ctx.fillStyle = '#2a5a2a';
+          ctx.fillRect(-12, -5, 24, 10);
+          ctx.fillStyle = '#4a8a4a';
+          ctx.fillRect(-10, -4, 20, 8);
+          ctx.fillStyle = '#8afa8a';
+          ctx.fillRect(-6, -3, 8, 6);
+          ctx.fillStyle = '#4afa4a';
+          ctx.fillRect(10, -2, 4, 6);
+          ctx.fillRect(11, 4, 2, 3);
+        } else if (this.type === 'boneclub') {
+          ctx.fillStyle = '#8a7a6a';
+          ctx.fillRect(-4, -2, 8, 16);
+          ctx.fillStyle = '#d0c8b8';
+          ctx.fillRect(-8, -12, 16, 12);
+          ctx.fillStyle = '#e8e0d0';
+          ctx.fillRect(-6, -10, 12, 8);
+          ctx.fillStyle = '#a09080';
+          ctx.fillRect(-7, -11, 3, 4);
+          ctx.fillRect(4, -11, 3, 4);
+        } else if (this.type === 'armor') {
+          ctx.fillStyle = '#5070a0';
+          ctx.fillRect(-9, -8, 18, 16);
+          ctx.fillStyle = '#7090b0';
+          ctx.fillRect(-7, -6, 14, 12);
+          ctx.fillStyle = '#90b0d0';
+          ctx.fillRect(-5, -4, 10, 8);
+          ctx.fillStyle = '#b0d0f0';
+          ctx.fillRect(-1, -6, 2, 12);
+          ctx.fillRect(-5, -1, 10, 2);
+        }
+        
+        ctx.scale(1/1.5, 1/1.5);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        const sparkleTime = Date.now() / 150;
+        ctx.fillRect(-15 + Math.sin(sparkleTime) * 5, -18, 3, 3);
+        ctx.fillRect(12 + Math.cos(sparkleTime * 1.3) * 5, -15, 3, 3);
+        
+        ctx.restore();
+      }
+      getHitbox() { return { x: this.x - 20, y: this.y - 20, width: 40, height: 40 }; }
+    }
+
+    class Bullet {
+      constructor(x, y, vx, vy, damage, type = 'rapid') {
+        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+        this.damage = damage; this.type = type; this.dead = false;
+      }
+      update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        if (this.type === 'acid') this.vy += 150 * dt;
+        if (this.x < 0 || this.x > CONFIG.LEVEL_WIDTH || this.y < 0 || this.y > CONFIG.CANVAS_HEIGHT) {
+          this.dead = true;
+        }
+        return this.dead;
+      }
+      draw(ctx, camera) {
+        const sx = this.x - camera.x;
+        const sy = this.y;
+        if (sx < -10 || sx > CONFIG.CANVAS_WIDTH + 10) return;
+        
+        if (this.type === 'acid') {
+          ctx.fillStyle = '#2a8a2a';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#4afa4a';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#8afa8a';
+          ctx.beginPath();
+          ctx.arc(sx - 1, sy - 1, 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(74, 250, 74, 0.5)';
+          ctx.beginPath();
+          ctx.arc(sx - this.vx * 0.02, sy - 3, 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = '#ff8800';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffcc00';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      getHitbox() { return { x: this.x - 5, y: this.y - 5, width: 10, height: 10 }; }
+    }
+
+    // Due to length limitations, I'll continue with Player, Enemy, and remaining systems in the response...
+    // [Continuing from where we left off...]
+
+    // ============================================
+    // PLAYER
+    // ============================================
+    class Player {
+      constructor(x, y) {
+        this.x = x; this.y = y;
+        this.width = 48; this.height = 52;
+        this.vx = 0; this.vy = 0;
+        this.grounded = false; this.facing = 1;
+        this.state = 'idle';
+        this.attackTimer = 0; this.attackPhase = 0;
+        this.animFrame = 0; this.animTimer = 0;
+        this.health = CONFIG.PLAYER_MAX_HEALTH;
+        this.maxHealth = CONFIG.PLAYER_MAX_HEALTH;
+        this.flashTimer = 0; this.invulnTimer = 0;
+        this.dead = false; this.deathTimer = 0;
+        this.hunger = CONFIG.MAX_HUNGER;
+        this.thirst = CONFIG.MAX_THIRST;
+        this.isSlowed = false;
+        this.weapon = null;
+        this.weaponAmmo = 0;
+        this.shootCooldown = 0;
+        this.hasArmor = false;
+        this.armorHits = 0;
+        this.clubSwinging = false;
+        this.clubTimer = 0;
+      }
+
+      takeDamage(amount) {
+        if (this.invulnTimer > 0 || this.dead) return;
+        if (this.hasArmor) {
+          amount = Math.floor(amount * 0.5);
+          this.armorHits++;
+          if (this.armorHits >= 5) { this.hasArmor = false; this.armorHits = 0; }
+        }
+        this.health -= amount;
+        this.flashTimer = 0.3;
+        this.invulnTimer = 0.5;
+        if (this.health <= 0) { 
+          this.health = 0; 
+          this.dead = true; 
+          this.state = 'dying';
+          this.deathTimer = CONFIG.DEATH_ANIMATION_TIME;
+        }
+      }
+
+      restoreHunger(amt) { this.hunger = Math.min(CONFIG.MAX_HUNGER, this.hunger + amt); }
+      restoreThirst(amt) { this.thirst = Math.min(CONFIG.MAX_THIRST, this.thirst + amt); }
+
+      update(dt) {
+        if (this.dead) {
+          this.deathTimer -= dt;
+          return;
+        }
+        
+        const C = CONFIG;
+
+        if (this.flashTimer > 0) this.flashTimer -= dt;
+        if (this.invulnTimer > 0) this.invulnTimer -= dt;
+        if (this.shootCooldown > 0) this.shootCooldown -= dt;
+        if (this.clubTimer > 0) this.clubTimer -= dt;
+        else this.clubSwinging = false;
+
+        this.hunger -= C.HUNGER_DRAIN * dt;
+        this.thirst -= C.THIRST_DRAIN * dt;
+        this.hunger = Math.max(0, this.hunger);
+        this.thirst = Math.max(0, this.thirst);
+
+        this.isSlowed = this.hunger <= 0 || this.thirst <= 0;
+        if (this.hunger <= 0) this.health -= C.STARVATION_DAMAGE * dt;
+        if (this.thirst <= 0) this.health -= C.DEHYDRATION_DAMAGE * dt;
+        
+        if (this.hunger >= C.MAX_HUNGER && this.thirst >= C.MAX_THIRST && this.health < this.maxHealth) {
+          this.health = Math.min(this.maxHealth, this.health + C.HP_REGEN_RATE * dt);
+        }
+        
+        if (this.health <= 0) { 
+          this.health = 0; 
+          this.dead = true; 
+          this.state = 'dying';
+          this.deathTimer = CONFIG.DEATH_ANIMATION_TIME;
+        }
+
+        const speed = this.isSlowed ? C.PLAYER_SPEED_SLOW : C.PLAYER_SPEED;
+        let moveDir = 0;
+        if (Input.keys.left) moveDir -= 1;
+        if (Input.keys.right) moveDir += 1;
+
+        if (moveDir !== 0) {
+          this.facing = moveDir;
+          this.vx += moveDir * C.PLAYER_ACCELERATION * dt;
+          this.vx = Math.max(-speed, Math.min(speed, this.vx));
+        } else {
+          if (this.vx > 0) this.vx = Math.max(0, this.vx - C.PLAYER_FRICTION * dt);
+          else if (this.vx < 0) this.vx = Math.min(0, this.vx + C.PLAYER_FRICTION * dt);
+        }
+
+        if (Input.keys.jump && this.grounded) {
+          this.vy = -C.JUMP_FORCE;
+          this.grounded = false;
+        }
+
+        this.vy += C.GRAVITY * dt;
+        this.vy = Math.min(this.vy, C.MAX_FALL_SPEED);
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        const groundY = C.CANVAS_HEIGHT - C.GROUND_HEIGHT;
+        const scaledHeight = this.height * CONFIG.PLAYER_SCALE;
+        if (this.y + scaledHeight > groundY) {
+          this.y = groundY - scaledHeight;
+          this.vy = 0;
+          this.grounded = true;
+        }
+
+        if (this.x < 0) { this.x = 0; this.vx = 0; }
+        if (this.x + this.width > C.LEVEL_WIDTH) { this.x = C.LEVEL_WIDTH - this.width; this.vx = 0; }
+
+        if (Input.isAttackJustPressed() && this.attackTimer <= 0 && !this.clubSwinging) {
+          if (this.weapon === 'boneclub' && this.weaponAmmo > 0) {
+            this.swingClub();
+          } else {
+            this.attackTimer = 0.45;
+            this.attackPhase = 0;
+            this.state = 'attack';
+          }
+        }
+
+        if (this.attackTimer > 0) {
+          this.attackTimer -= dt;
+          this.attackPhase = 1 - (this.attackTimer / 0.45);
+        }
+
+        this.animTimer += dt;
+        if (this.animTimer > 0.1) {
+          this.animTimer = 0;
+          this.animFrame = (this.animFrame + 1) % 4;
+        }
+
+        if (this.attackTimer > 0) this.state = 'attack';
+        else if (!this.grounded) this.state = 'jump';
+        else if (Math.abs(this.vx) > 10) this.state = 'walk';
+        else this.state = 'idle';
+      }
+
+      shoot(bullets) {
+        if (!this.weapon || this.shootCooldown > 0) return;
+        if (this.weapon === 'boneclub') return;
+        if (this.weaponAmmo <= 0) { this.weapon = null; return; }
+        
+        const C = CONFIG;
+        const scale = C.PLAYER_SCALE;
+        const bx = this.x + (this.facing === 1 ? this.width * scale : 0);
+        const by = this.y + 35 * scale;
+        
+        if (this.weapon === 'rapidfire') {
+          bullets.push(new Bullet(bx, by, this.facing * C.BULLET_SPEED, 0, C.RAPID_DAMAGE, 'rapid'));
+          this.shootCooldown = C.RAPID_FIRE_RATE;
+          this.weaponAmmo--;
+        } else if (this.weapon === 'acidgun') {
+          bullets.push(new Bullet(bx, by, this.facing * C.BULLET_SPEED * 0.8, 0, C.ACID_DAMAGE, 'acid'));
+          this.shootCooldown = C.ACID_FIRE_RATE;
+          this.weaponAmmo--;
+        }
+        
+        if (this.weaponAmmo <= 0) this.weapon = null;
+      }
+
+      swingClub() {
+        if (this.weapon !== 'boneclub' || this.clubSwinging || this.weaponAmmo <= 0) return false;
+        this.clubSwinging = true;
+        this.clubTimer = CONFIG.BONE_CLUB_RATE;
+        this.weaponAmmo--;
+        if (this.weaponAmmo <= 0) this.weapon = null;
+        return true;
+      }
+
+      draw(ctx, camera) {
+        const sx = this.x - camera.x;
+        const sy = this.y - camera.y;
+        const scale = CONFIG.PLAYER_SCALE;
+        
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.scale(scale, scale);
+        
+        if (this.flashTimer > 0) ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
+        
+        const deathPhase = this.dead ? 1 - (this.deathTimer / CONFIG.DEATH_ANIMATION_TIME) : 0;
+        SpriteRenderer.drawRaptor(ctx, this.state, this.animFrame, this.facing, this.attackPhase, this.flashTimer, this.hasArmor, deathPhase);
+        
+        if (this.weapon && !this.dead) {
+          const armX = this.facing === 1 ? 38 : 10;
+          const armY = 22;
+          
+          ctx.save();
+          if (this.facing === -1) {
+            ctx.scale(-1, 1);
+            ctx.translate(-48, 0);
+          }
+          
+          if (this.weapon === 'boneclub') {
+            const clubProgress = this.clubSwinging ? (1 - this.clubTimer / CONFIG.BONE_CLUB_RATE) : 0;
+            const clubAngle = this.clubSwinging ? (-0.8 + clubProgress * 3) : -0.3;
+            
+            ctx.save();
+            ctx.translate(armX + 8, armY);
+            ctx.rotate(clubAngle);
+            
+            ctx.fillStyle = '#8a7a6a';
+            ctx.fillRect(-2, 0, 4, 16);
+            ctx.fillStyle = '#d0c8b8';
+            ctx.beginPath();
+            ctx.ellipse(0, -6, 8, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#e8e0d0';
+            ctx.beginPath();
+            ctx.ellipse(-1, -8, 5, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#a09080';
+            ctx.beginPath();
+            ctx.arc(-5, -10, 2.5, 0, Math.PI * 2);
+            ctx.arc(5, -10, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+          } else if (this.weapon === 'rapidfire') {
+            ctx.save();
+            ctx.translate(armX + 6, armY + 2);
+            ctx.fillStyle = '#3a5a7a';
+            ctx.fillRect(0, -2, 18, 5);
+            ctx.fillStyle = '#5a7a9a';
+            ctx.fillRect(2, -1, 14, 3);
+            ctx.fillStyle = '#8abadf';
+            ctx.fillRect(3, 0, 4, 1);
+            ctx.fillStyle = '#2a3a4a';
+            ctx.fillRect(16, -1, 4, 3);
+            ctx.restore();
+            
+          } else if (this.weapon === 'acidgun') {
+            ctx.save();
+            ctx.translate(armX + 6, armY + 2);
+            ctx.fillStyle = '#2a5a2a';
+            ctx.fillRect(0, -3, 18, 6);
+            ctx.fillStyle = '#4a8a4a';
+            ctx.fillRect(2, -2, 14, 4);
+            ctx.fillStyle = '#3a7a3a';
+            ctx.beginPath();
+            ctx.arc(8, -5, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#8afa8a';
+            ctx.beginPath();
+            ctx.arc(8, -5, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#4afa4a';
+            ctx.fillRect(16, -1, 4, 3);
+            ctx.fillRect(18, 2, 2, 2);
+            ctx.restore();
+          }
+          
+          ctx.restore();
+        }
+        
+        ctx.restore();
+      }
+
+      getAttackHitbox() {
+        const scale = CONFIG.PLAYER_SCALE;
+        if (this.clubSwinging) {
+          const offsetX = this.facing === 1 ? this.width * scale - 5 : -55;
+          return { x: this.x + offsetX, y: this.y, width: 60, height: 60 };
+        }
+        const offsetX = this.facing === 1 ? this.width * scale - 5 : -35;
+        return { x: this.x + offsetX, y: this.y + 5, width: 40, height: 50 };
+      }
+      
+      getAttackDamage() {
+        if (this.clubSwinging) return CONFIG.BONE_CLUB_DAMAGE;
+        return CONFIG.PLAYER_DAMAGE;
+      }
+      
+      isAttacking() { return this.attackTimer > 0.1 || this.clubSwinging; }
+      
+      getHitbox() { 
+        const scale = CONFIG.PLAYER_SCALE;
+        return { x: this.x + 10, y: this.y + 5, width: this.width * scale - 20, height: this.height * scale - 10 }; 
+      }
+    }
+
+    // ============================================
+    // ENEMY
+    // ============================================
+    class Enemy {
+      constructor(x, y, difficultyMult = 1.0) {
+        this.x = x; this.y = y;
+        this.width = 50; this.height = 52;
+        this.vx = 0; this.vy = 0;
+        this.grounded = false; this.facing = -1;
+        this.state = 'patrol';
+        this.animFrame = 0; this.animTimer = 0;
+        
+        this.health = Math.floor(CONFIG.ENEMY_BASE_HEALTH * difficultyMult);
+        this.maxHealth = this.health;
+        this.damage = Math.floor(CONFIG.ENEMY_BASE_DAMAGE * difficultyMult);
+        this.speed = CONFIG.ENEMY_BASE_SPEED * Math.min(1.5, difficultyMult);
+        this.chaseSpeed = CONFIG.ENEMY_BASE_CHASE_SPEED * Math.min(1.5, difficultyMult);
+        
+        this.flashTimer = 0;
+        this.attackTimer = 0; this.attackCooldown = 0;
+        this.dead = false; this.deathTimer = 0;
+        this.droppedLoot = false;
+        this.patrolDir = Math.random() > 0.5 ? 1 : -1;
+        this.patrolTimer = 2 + Math.random() * 2;
+        this.sawPlayer = false;
+        this.retreatTimer = 0;
+      }
+
+      takeDamage(amount) {
+        if (this.dead) return;
+        this.health -= amount;
+        this.flashTimer = 0.25;
+        if (this.health <= 0) { 
+          this.health = 0; 
+          this.dead = true; 
+          this.state = 'dying';
+          this.deathTimer = CONFIG.ENEMY_DEATH_TIME; 
+        }
+      }
+
+      canSeePlayer(player) {
+        const dx = player.x - this.x;
+        if (Math.abs(dx) > CONFIG.ENEMY_SIGHT_RANGE) return false;
+        return (dx > 0 && this.facing === 1) || (dx < 0 && this.facing === -1);
+      }
+
+      update(dt, player) {
+        const C = CONFIG;
+        if (this.flashTimer > 0) this.flashTimer -= dt;
+        if (this.attackCooldown > 0) this.attackCooldown -= dt;
+        if (this.retreatTimer > 0) this.retreatTimer -= dt;
+
+        if (this.dead) {
+          this.deathTimer -= dt;
+          return { remove: this.deathTimer <= 0, dropLoot: !this.droppedLoot };
+        }
+
+        this.animTimer += dt;
+        if (this.animTimer > 0.1) { this.animTimer = 0; this.animFrame = (this.animFrame + 1) % 4; }
+
+        if (this.attackTimer > 0) { 
+          this.attackTimer -= dt; 
+          this.state = 'attack'; 
+          if (this.attackTimer <= 0) {
+            this.retreatTimer = 0.6;
+          }
+          return { remove: false }; 
+        }
+
+        const dx = player.x - this.x;
+        const distance = Math.abs(dx);
+
+        if (this.canSeePlayer(player) && !player.dead) this.sawPlayer = true;
+
+        if (this.retreatTimer > 0) {
+          this.state = 'retreat';
+          const retreatDir = dx > 0 ? -1 : 1;
+          this.facing = dx > 0 ? 1 : -1;
+          this.vx = retreatDir * this.speed;
+        }
+        else if (this.sawPlayer && distance < CONFIG.ENEMY_SIGHT_RANGE * 1.5 && !player.dead) {
+          this.state = 'chase';
+          this.facing = dx > 0 ? 1 : -1;
+          
+          if (distance > C.ENEMY_ATTACK_RANGE + 10) {
+            this.vx = this.facing * this.chaseSpeed;
+          } else if (distance < C.ENEMY_RETREAT_DISTANCE) {
+            this.vx = -this.facing * this.speed * 0.5;
+          } else {
+            this.vx = 0;
+          }
+          
+          if (distance < C.ENEMY_ATTACK_RANGE && this.attackCooldown <= 0) {
+            this.attackTimer = 0.4;
+            this.attackCooldown = C.ENEMY_ATTACK_COOLDOWN;
+            this.state = 'attack';
+            this.vx = 0;
+          }
+        } else {
+          this.state = 'patrol';
+          this.sawPlayer = false;
+          this.patrolTimer -= dt;
+          if (this.patrolTimer <= 0) { this.patrolDir *= -1; this.patrolTimer = 2 + Math.random() * 2; }
+          this.facing = this.patrolDir;
+          this.vx = this.patrolDir * this.speed;
+        }
+
+        this.vy += C.GRAVITY * dt;
+        this.vy = Math.min(this.vy, C.MAX_FALL_SPEED);
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        const groundY = C.CANVAS_HEIGHT - C.GROUND_HEIGHT;
+        const scaledHeight = this.height * CONFIG.ENEMY_SCALE;
+        if (this.y + scaledHeight > groundY) { 
+          this.y = groundY - scaledHeight; 
+          this.vy = 0; 
+          this.grounded = true; 
+        }
+        if (this.x < 20) { this.x = 20; this.patrolDir = 1; }
+        if (this.x + this.width > C.LEVEL_WIDTH - 20) { this.x = C.LEVEL_WIDTH - this.width - 20; this.patrolDir = -1; }
+
+        return { remove: false };
+      }
+
+      draw(ctx, camera) {
+        const sx = this.x - camera.x;
+        const sy = this.y - camera.y;
+        const scale = CONFIG.ENEMY_SCALE;
+        
+        if (sx < -80 || sx > CONFIG.CANVAS_WIDTH + 80) return;
+
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.scale(scale, scale);
+        
+        const deathPhase = this.dead ? 1 - (this.deathTimer / CONFIG.ENEMY_DEATH_TIME) : 0;
+        
+        if (this.dead) ctx.globalAlpha = 1 - (deathPhase * 0.7);
+        else if (this.flashTimer > 0) ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
+        
+        SpriteRenderer.drawBabySpino(ctx, this.state, this.animFrame, this.facing, this.flashTimer, deathPhase);
+        ctx.restore();
+
+        if (this.health < this.maxHealth && !this.dead) {
+          const bw = 35, bh = 5;
+          const bx = sx + (this.width * scale - bw) / 2;
+          const by = sy - 12;
+          ctx.fillStyle = '#222';
+          ctx.fillRect(bx, by, bw, bh);
+          const hp = this.health / this.maxHealth;
+          ctx.fillStyle = hp > 0.5 ? '#4a4' : hp > 0.25 ? '#aa4' : '#a44';
+          ctx.fillRect(bx + 1, by + 1, (bw - 2) * hp, bh - 2);
+        }
+      }
+
+      getHitbox() { 
+        const scale = CONFIG.ENEMY_SCALE;
+        return { x: this.x, y: this.y, width: this.width * scale, height: this.height * scale }; 
+      }
+      getAttackHitbox() {
+        const scale = CONFIG.ENEMY_SCALE;
+        const ox = this.facing === 1 ? this.width * scale : -25;
+        return { x: this.x + ox, y: this.y + 10 * scale, width: 30, height: 35 };
+      }
+      isAttacking() { return this.attackTimer > 0.2; }
+    }
+
+    // ============================================
+    // GAME SYSTEMS
+    // ============================================
+    class SpawnManager {
+      constructor() {
+        this.spawnZones = [];
+        this.enemies = [];
+        this.pickups = [];
+        this.bullets = [];
+        for (let x = 400; x < CONFIG.LEVEL_WIDTH - 200; x += CONFIG.SPAWN_DISTANCE) {
+          this.spawnZones.push({ x, triggered: false });
+        }
+        // Weapon spawns on ground
+        const groundY = CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT;
+        this.pickups.push(new Pickup(250, groundY - 10, 'armor'));
+        this.pickups.push(new Pickup(450, groundY - 10, 'rapidfire'));
+        this.pickups.push(new Pickup(700, groundY - 10, 'boneclub'));
+        this.pickups.push(new Pickup(950, groundY - 10, 'acidgun'));
+        this.pickups.push(new Pickup(1200, groundY - 10, 'armor'));
+        this.pickups.push(new Pickup(1500, groundY - 10, 'rapidfire'));
+        this.pickups.push(new Pickup(1800, groundY - 10, 'boneclub'));
+        this.pickups.push(new Pickup(2100, groundY - 10, 'acidgun'));
+        this.pickups.push(new Pickup(2400, groundY - 10, 'armor'));
+        this.pickups.push(new Pickup(2700, groundY - 10, 'rapidfire'));
+      }
+
+      update(dt, player, particles) {
+        const diffMult = GameStats.getDifficultyMultiplier(player.x);
+        
+        for (const zone of this.spawnZones) {
+          if (!zone.triggered && Math.abs(player.x - zone.x) < 200) {
+            if (this.enemies.length < CONFIG.MAX_ENEMIES) {
+              const groundY = CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT;
+              const enemyHeight = 38 * CONFIG.ENEMY_SCALE;
+              this.enemies.push(new Enemy(zone.x + (Math.random() - 0.5) * 100, groundY - enemyHeight, diffMult));
+            }
+            zone.triggered = true;
+          }
+        }
+
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+          const result = this.enemies[i].update(dt, player);
+          if (result.dropLoot && this.enemies[i].dead && !this.enemies[i].droppedLoot) {
+            const groundY = CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT;
+            this.pickups.push(new Pickup(this.enemies[i].x + 15, groundY - 10, 'meat'));
+            this.enemies[i].droppedLoot = true;
+            particles.createDeathCloud(this.enemies[i].x + 25, this.enemies[i].y + 20);
+            GameStats.defeatEnemy();
+          }
+          if (result.remove) this.enemies.splice(i, 1);
+        }
+
+        for (let i = this.pickups.length - 1; i >= 0; i--) {
+          if (this.pickups[i].update(dt)) this.pickups.splice(i, 1);
+        }
+
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+          if (this.bullets[i].update(dt)) this.bullets.splice(i, 1);
+        }
+
+        for (const puddle of Background.puddles) {
+          if (puddle.collected) {
+            puddle.respawnTimer -= dt;
+            if (puddle.respawnTimer <= 0) puddle.collected = false;
+          }
+        }
+      }
+
+      draw(ctx, camera) {
+        for (const enemy of this.enemies) enemy.draw(ctx, camera);
+        for (const pickup of this.pickups) pickup.draw(ctx, camera);
+        for (const bullet of this.bullets) bullet.draw(ctx, camera);
+      }
+    }
+
+    const Combat = {
+      checkCollision(a, b) {
+        return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+      },
+      update(player, spawnManager, particles) {
+        const enemies = spawnManager.enemies;
+        const pickups = spawnManager.pickups;
+        const bullets = spawnManager.bullets;
+
+        if (Input.keys.shoot && player.weapon && player.weapon !== 'boneclub') {
+          player.shoot(bullets);
+        }
+
+        for (const bullet of bullets) {
+          if (bullet.dead) continue;
+          for (const enemy of enemies) {
+            if (enemy.dead) continue;
+            if (this.checkCollision(bullet.getHitbox(), enemy.getHitbox())) {
+              enemy.takeDamage(bullet.damage);
+              bullet.dead = true;
+              particles.createHitSparks(bullet.x, bullet.y);
+            }
+          }
+        }
+
+        for (const enemy of enemies) {
+          if (enemy.dead) continue;
+          if (player.isAttacking() && this.checkCollision(player.getAttackHitbox(), enemy.getHitbox())) {
+            enemy.takeDamage(player.getAttackDamage());
+            particles.createHitSparks(enemy.x + 25, enemy.y + 20);
+          }
+          if (enemy.isAttacking() && this.checkCollision(enemy.getAttackHitbox(), player.getHitbox())) {
+            player.takeDamage(enemy.damage);
+          }
+        }
+
+        const playerBox = player.getHitbox();
+        for (let i = pickups.length - 1; i >= 0; i--) {
+          const p = pickups[i];
+          if (this.checkCollision(playerBox, p.getHitbox())) {
+            if (p.type === 'meat') {
+              player.restoreHunger(CONFIG.MEAT_RESTORE);
+              p.collected = true;
+            } else if (p.type === 'rapidfire') {
+              if (!player.weapon || player.weapon === 'rapidfire') {
+                player.weapon = 'rapidfire';
+                player.weaponAmmo += 40;
+                p.collected = true;
+              }
+            } else if (p.type === 'acidgun') {
+              if (!player.weapon || player.weapon === 'acidgun') {
+                player.weapon = 'acidgun';
+                player.weaponAmmo += 20;
+                p.collected = true;
+              }
+            } else if (p.type === 'boneclub') {
+              if (!player.weapon || player.weapon === 'boneclub') {
+                player.weapon = 'boneclub';
+                player.weaponAmmo += 15;
+                p.collected = true;
+              }
+            } else if (p.type === 'armor') {
+              if (!player.hasArmor) {
+                player.hasArmor = true;
+                player.armorHits = 0;
+                p.collected = true;
+              }
+            }
+          }
+        }
+
+        for (const bush of Background.bushes) {
+          if (bush.collected) continue;
+          if (Math.abs(player.x + player.width / 2 - bush.x) < 20 && player.y > CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT - 60) {
+            player.restoreHunger(CONFIG.BERRY_RESTORE);
+            bush.collected = true;
+          }
+        }
+
+        for (const puddle of Background.puddles) {
+          if (puddle.collected) continue;
+          if (Math.abs(player.x + player.width / 2 - puddle.x) < 18) {
+            player.restoreThirst(CONFIG.PUDDLE_RESTORE);
+            puddle.collected = true;
+            puddle.respawnTimer = 25;
+          }
+        }
+
+        for (const pond of Background.ponds) {
+          const px = player.x + player.width / 2;
+          const pondWidth = Math.max(...pond.points.map(p => Math.abs(p.x))) * 2;
+          if (px > pond.x - pondWidth / 2 && px < pond.x + pondWidth / 2) {
+            player.restoreThirst(CONFIG.POND_RESTORE_RATE * (1/60));
+          }
+        }
+      }
+    };
+
+    // ============================================
+    // UI
+    // ============================================
+    const UI = {
+      draw(ctx, player, width) {
+        const bw = 90, bh = 10, gap = 6, sx = 8, sy = 8;
+
+        this.drawBar(ctx, sx, sy, bw, bh, player.health, player.maxHealth, '#5a5', '#833', 'â™¥', player.health < 30);
+        this.drawBar(ctx, sx + bw + gap, sy, bw, bh, player.hunger, CONFIG.MAX_HUNGER, '#a84', '#543', 'ðŸ–', player.hunger < 20);
+        this.drawBar(ctx, sx + (bw + gap) * 2, sy, bw, bh, player.thirst, CONFIG.MAX_THIRST, '#48a', '#345', 'ðŸ’§', player.thirst < 20);
+
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(width - 95, sy, 87, 28);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '7px "Press Start 2P", monospace';
+        ctx.fillText('SCORE', width - 92, sy + 9);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(GameStats.currentScore.toString(), width - 92, sy + 19);
+        ctx.fillStyle = '#aaa';
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.fillText(`HI: ${GameStats.highScore}`, width - 92, sy + 26);
+
+        if (player.weapon) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(width - 75, sy + 32, 67, 22);
+          ctx.fillStyle = '#fff';
+          ctx.font = '7px "Press Start 2P", monospace';
+          const weaponNames = { rapidfire: 'RAPID', acidgun: 'ACID', boneclub: 'CLUB' };
+          ctx.fillText(weaponNames[player.weapon] || player.weapon, width - 72, sy + 42);
+          ctx.fillStyle = '#aaa';
+          ctx.fillText(`x${player.weaponAmmo}`, width - 72, sy + 51);
+        }
+
+        if (player.hasArmor) {
+          ctx.fillStyle = '#8090a0';
+          ctx.fillRect(sx, sy + bh + 4, 40, 12);
+          ctx.fillStyle = '#fff';
+          ctx.font = '6px "Press Start 2P", monospace';
+          ctx.fillText('ARMOR', sx + 3, sy + bh + 12);
+        }
+      },
+
+      drawBar(ctx, x, y, w, h, value, max, colorHigh, colorLow, label, warning = false) {
+        const pct = value / max;
+        if (warning && Math.sin(Date.now() / 150) > 0) {
+          ctx.fillStyle = 'rgba(255,0,0,0.3)';
+          ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
+        }
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(x, y, w, h);
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, pct > 0.3 ? colorHigh : colorLow);
+        grad.addColorStop(1, pct > 0.3 ? '#333' : '#300');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x + 1, y + 1, (w - 2) * pct, h - 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fillRect(x + 1, y + 1, (w - 2) * pct, h / 3);
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = '#fff';
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.fillText(label, x + 2, y + h - 2);
+      },
+
+      drawGameOver(ctx, width, height) {
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#f44';
+        ctx.font = '16px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', width / 2, height / 2 - 35);
+        
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '10px "Press Start 2P", monospace';
+        ctx.fillText(`SCORE: ${GameStats.currentScore}`, width / 2, height / 2 - 10);
+        
+        if (GameStats.currentScore >= GameStats.highScore) {
+          ctx.fillStyle = '#4f4';
+          ctx.font = '8px "Press Start 2P", monospace';
+          ctx.fillText('NEW HIGH SCORE!', width / 2, height / 2 + 5);
+        } else {
+          ctx.fillStyle = '#aaa';
+          ctx.font = '8px "Press Start 2P", monospace';
+          ctx.fillText(`HIGH: ${GameStats.highScore}`, width / 2, height / 2 + 5);
+        }
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '7px "Press Start 2P", monospace';
+        ctx.fillText(`Distance: ${GameStats.distance}m`, width / 2, height / 2 + 20);
+        ctx.fillText(`Enemies: ${GameStats.enemiesDefeated}`, width / 2, height / 2 + 32);
+        
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.fillText('Press Z or tap ATTACK to restart', width / 2, height / 2 + 50);
+        ctx.textAlign = 'left';
+      }
+    };
+
+    class Camera {
+      constructor() { this.x = 0; this.y = 0; }
+      follow(player, w, h, levelW) {
+        let tx = player.x + player.width / 2 - w / 2;
+        tx = Math.max(0, Math.min(tx, levelW - w));
+        this.x += (tx - this.x) * CONFIG.CAMERA_LERP;
+      }
+    }
+
+    class Game {
+      constructor() {
+        this.canvas = document.getElementById('game-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = CONFIG.CANVAS_WIDTH;
+        this.canvas.height = CONFIG.CANVAS_HEIGHT;
+        this.ctx.imageSmoothingEnabled = false;
+        this.gameState = 'playing';
+        Background.init();
+        GameStats.init();
+        GameStats.reset();
+        DayNight.time = 0.35; // Start at day
+        Birds.init(); // Initialize birds
+        this.player = new Player(100, 100);
+        this.camera = new Camera();
+        this.spawnManager = new SpawnManager();
+        this.particles = new ParticleSystem();
+        this.lastTime = performance.now();
+        Input.init();
+        this.loop();
+      }
+
+      restart() {
+        Background.bushes.forEach(b => b.collected = false);
+        Background.puddles.forEach(p => { p.collected = false; p.respawnTimer = 0; });
+        GameStats.reset();
+        DayNight.time = 0.35;
+        Birds.init(); // Reset birds
+        this.player = new Player(100, 100);
+        this.camera = new Camera();
+        this.spawnManager = new SpawnManager();
+        this.particles = new ParticleSystem();
+        this.gameState = 'playing';
+      }
+
+      loop() {
+        const now = performance.now();
+        const dt = Math.min((now - this.lastTime) / 1000, 0.05);
+        this.lastTime = now;
+        this.update(dt);
+        this.render();
+        requestAnimationFrame(() => this.loop());
+      }
+
+      update(dt) {
+        if (this.gameState === 'gameover') {
+          if (Input.isAttackJustPressed() || Input.keys.jump) this.restart();
+          return;
+        }
+        DayNight.update(dt);
+        Birds.update(dt); // Update birds
+        this.player.update(dt);
+        GameStats.updateDistance(this.player.x);
+        this.spawnManager.update(dt, this.player, this.particles);
+        Combat.update(this.player, this.spawnManager, this.particles);
+        this.particles.update(dt);
+        this.camera.follow(this.player, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, CONFIG.LEVEL_WIDTH);
+        if (this.player.dead && this.player.deathTimer <= 0) {
+          GameStats.saveHighScore();
+          this.gameState = 'gameover';
+        }
+      }
+
+      render() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        Background.draw(ctx, this.camera, this.canvas.width, this.canvas.height);
+        this.spawnManager.draw(ctx, this.camera);
+        this.particles.draw(ctx, this.camera);
+        this.player.draw(ctx, this.camera);
+        UI.draw(ctx, this.player, this.canvas.width);
+        if (this.gameState === 'gameover') UI.drawGameOver(ctx, this.canvas.width, this.canvas.height);
+      }
+    }
+
+    window.addEventListener('load', () => new Game());
+  </script>
 </body>
 </html>
