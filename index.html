@@ -413,10 +413,22 @@
     // ============================================
     const CraftingUI = {
       isOpen: false,
-      selectedRecipe: null,
-      
+      selectedRecipe: 0,
+      recipeCount: 5,
+
       toggle() {
         this.isOpen = !this.isOpen;
+        if (this.isOpen) {
+          this.selectedRecipe = 0; // Reset selection when opening
+        }
+      },
+
+      moveSelectionUp() {
+        this.selectedRecipe = (this.selectedRecipe - 1 + this.recipeCount) % this.recipeCount;
+      },
+
+      moveSelectionDown() {
+        this.selectedRecipe = (this.selectedRecipe + 1) % this.recipeCount;
       },
       
       canCraft(recipeName) {
@@ -480,8 +492,8 @@
         ctx.font = '10px "Press Start 2P", monospace';
         ctx.fillText('CRAFTING MENU', boxX + 10, boxY + 20);
         ctx.font = '6px "Press Start 2P", monospace';
-        ctx.fillText('Press C to close', boxX + 10, boxY + 32);
-        
+        ctx.fillText('Up/Down to select, Z to craft, C to close', boxX + 10, boxY + 32);
+
         // Recipes
         const recipes = [
           { name: 'Bone Club', key: 'boneclub', y: 50 },
@@ -490,17 +502,36 @@
           { name: 'Health Pot', key: 'healthpotion', y: 125 },
           { name: 'Armor', key: 'armor', y: 150 }
         ];
-        
-        for (const r of recipes) {
+
+        for (let i = 0; i < recipes.length; i++) {
+          const r = recipes[i];
           const canCraft = this.canCraft(r.key);
-          ctx.fillStyle = canCraft ? '#4a4' : '#844';
+          const isSelected = i === this.selectedRecipe;
+
+          // Background color based on craftability and selection
+          if (isSelected) {
+            ctx.fillStyle = canCraft ? '#5b5' : '#955';
+          } else {
+            ctx.fillStyle = canCraft ? '#4a4' : '#844';
+          }
           ctx.fillRect(boxX + 10, boxY + r.y, boxW - 20, 18);
-          
+
+          // Selection border/highlight
+          if (isSelected) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(boxX + 10, boxY + r.y, boxW - 20, 18);
+          }
+
+          // Selection arrow
           ctx.fillStyle = '#fff';
           ctx.font = '7px "Press Start 2P", monospace';
-          ctx.fillText(r.name, boxX + 15, boxY + r.y + 12);
-          
-          // Show recipe
+          if (isSelected) {
+            ctx.fillText('>', boxX + 12, boxY + r.y + 12);
+          }
+          ctx.fillText(r.name, boxX + 25, boxY + r.y + 12);
+
+          // Show recipe requirements
           const recipe = CONFIG.RECIPES[r.key];
           let reqText = '';
           for (let item in recipe) {
@@ -508,9 +539,10 @@
           }
           ctx.font = '5px "Press Start 2P", monospace';
           ctx.fillStyle = '#ccc';
-          ctx.fillText(reqText, boxX + 100, boxY + r.y + 12);
-          
-          if (canCraft) {
+          ctx.fillText(reqText, boxX + 110, boxY + r.y + 12);
+
+          // Show craft prompt only for selected item
+          if (isSelected && canCraft) {
             ctx.fillStyle = '#afa';
             ctx.fillText('[Z to craft]', boxX + boxW - 90, boxY + r.y + 12);
           }
@@ -728,6 +760,16 @@
       isCraftJustPressed() {
         if (this.keys.craft && !this.craftPressed) { this.craftPressed = true; return true; }
         if (!this.keys.craft) this.craftPressed = false;
+        return false;
+      },
+      isUpJustPressed() {
+        if (this.keys.up && !this.upPressed) { this.upPressed = true; return true; }
+        if (!this.keys.up) this.upPressed = false;
+        return false;
+      },
+      isDownJustPressed() {
+        if (this.keys.down && !this.downPressed) { this.downPressed = true; return true; }
+        if (!this.keys.down) this.downPressed = false;
         return false;
       }
     };
@@ -2860,14 +2902,20 @@
           }
         }
         
-        // Crafting while menu is open
-        if (CraftingUI.isOpen && Input.isAttackJustPressed()) {
-          // Try to craft the first available recipe
-          const recipes = ['boneclub', 'rapidfire', 'acidgun', 'healthpotion', 'armor'];
-          for (const recipe of recipes) {
-            if (CraftingUI.canCraft(recipe)) {
-              CraftingUI.craft(recipe, this.player);
-              break; // Craft one at a time
+        // Crafting menu navigation and crafting
+        if (CraftingUI.isOpen) {
+          if (Input.isUpJustPressed()) {
+            CraftingUI.moveSelectionUp();
+          }
+          if (Input.isDownJustPressed()) {
+            CraftingUI.moveSelectionDown();
+          }
+          if (Input.isAttackJustPressed()) {
+            // Craft the selected recipe
+            const recipes = ['boneclub', 'rapidfire', 'acidgun', 'healthpotion', 'armor'];
+            const selectedKey = recipes[CraftingUI.selectedRecipe];
+            if (CraftingUI.canCraft(selectedKey)) {
+              CraftingUI.craft(selectedKey, this.player);
             }
           }
         }
