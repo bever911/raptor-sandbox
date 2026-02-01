@@ -148,6 +148,20 @@
 
       // Day/Night cycle
       DAY_NIGHT_CYCLE_LENGTH: 120, // seconds for full day/night cycle
+      
+      // Resources & Crafting - NEW in Phase 9
+      WOOD_PER_TREE: 3,
+      STONE_PER_ROCK: 2,
+      BONES_PER_ENEMY: 2,
+      METAL_SPAWN_CHANCE: 0.15,
+      
+      RECIPES: {
+        boneclub: { bones: 5, wood: 2 },
+        rapidfire: { metal: 10, wood: 5 },
+        acidgun: { bones: 8, stone: 3 },
+        healthpotion: { berries: 3 },
+        armor: { stone: 10, metal: 5 }
+      }
     };
 
     // ============================================
@@ -347,6 +361,164 @@
     };
 
     // ============================================
+    // INVENTORY SYSTEM - NEW in Phase 9
+    // ============================================
+    const Inventory = {
+      items: {
+        berries: 0,
+        meat: 0,
+        wood: 0,
+        stone: 0,
+        bones: 0,
+        metal: 0
+      },
+      collectibles: {
+        eggs: 0,
+        fossils: 0,
+        crystals: 0
+      },
+      
+      add(item, amount = 1) {
+        if (this.items.hasOwnProperty(item)) {
+          this.items[item] += amount;
+          return true;
+        }
+        if (this.collectibles.hasOwnProperty(item)) {
+          this.collectibles[item] += amount;
+          return true;
+        }
+        return false;
+      },
+      
+      has(item, amount = 1) {
+        return (this.items[item] || 0) >= amount;
+      },
+      
+      remove(item, amount = 1) {
+        if (this.items.hasOwnProperty(item) && this.items[item] >= amount) {
+          this.items[item] -= amount;
+          return true;
+        }
+        return false;
+      },
+      
+      reset() {
+        for (let key in this.items) this.items[key] = 0;
+        for (let key in this.collectibles) this.collectibles[key] = 0;
+      }
+    };
+
+    // ============================================
+    // CRAFTING SYSTEM - NEW in Phase 9
+    // ============================================
+    const CraftingUI = {
+      isOpen: false,
+      selectedRecipe: null,
+      
+      toggle() {
+        this.isOpen = !this.isOpen;
+      },
+      
+      canCraft(recipeName) {
+        const recipe = CONFIG.RECIPES[recipeName];
+        if (!recipe) return false;
+        
+        for (let item in recipe) {
+          if (!Inventory.has(item, recipe[item])) return false;
+        }
+        return true;
+      },
+      
+      craft(recipeName, player) {
+        if (!this.canCraft(recipeName)) return false;
+        
+        const recipe = CONFIG.RECIPES[recipeName];
+        for (let item in recipe) {
+          Inventory.remove(item, recipe[item]);
+        }
+        
+        // Give crafted item
+        if (recipeName === 'healthpotion') {
+          player.health = Math.min(player.maxHealth, player.health + 50);
+        } else if (recipeName === 'boneclub') {
+          player.weapon = 'boneclub';
+          player.weaponAmmo += 15;
+        } else if (recipeName === 'rapidfire') {
+          player.weapon = 'rapidfire';
+          player.weaponAmmo += 40;
+        } else if (recipeName === 'acidgun') {
+          player.weapon = 'acidgun';
+          player.weaponAmmo += 20;
+        } else if (recipeName === 'armor') {
+          player.hasArmor = true;
+          player.armorHits = 0;
+        }
+        
+        return true;
+      },
+      
+      draw(ctx, width, height) {
+        if (!this.isOpen) return;
+        
+        // Semi-transparent overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Crafting window
+        const boxW = 360, boxH = 200;
+        const boxX = (width - boxW) / 2;
+        const boxY = (height - boxH) / 2;
+        
+        ctx.fillStyle = '#2a3a2a';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#4a6a4a';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+        
+        // Title
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px "Press Start 2P", monospace';
+        ctx.fillText('CRAFTING MENU', boxX + 10, boxY + 20);
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.fillText('Press C to close', boxX + 10, boxY + 32);
+        
+        // Recipes
+        const recipes = [
+          { name: 'Bone Club', key: 'boneclub', y: 50 },
+          { name: 'Rapid Fire', key: 'rapidfire', y: 75 },
+          { name: 'Acid Gun', key: 'acidgun', y: 100 },
+          { name: 'Health Pot', key: 'healthpotion', y: 125 },
+          { name: 'Armor', key: 'armor', y: 150 }
+        ];
+        
+        for (const r of recipes) {
+          const canCraft = this.canCraft(r.key);
+          ctx.fillStyle = canCraft ? '#4a4' : '#844';
+          ctx.fillRect(boxX + 10, boxY + r.y, boxW - 20, 18);
+          
+          ctx.fillStyle = '#fff';
+          ctx.font = '7px "Press Start 2P", monospace';
+          ctx.fillText(r.name, boxX + 15, boxY + r.y + 12);
+          
+          // Show recipe
+          const recipe = CONFIG.RECIPES[r.key];
+          let reqText = '';
+          for (let item in recipe) {
+            reqText += `${item}:${recipe[item]} `;
+          }
+          ctx.font = '5px "Press Start 2P", monospace';
+          ctx.fillStyle = '#ccc';
+          ctx.fillText(reqText, boxX + 100, boxY + r.y + 12);
+          
+          if (canCraft) {
+            ctx.fillStyle = '#afa';
+            ctx.fillText('[Z to craft]', boxX + boxW - 90, boxY + r.y + 12);
+          }
+        }
+      }
+    };
+
+    // ============================================
     // GAME STATS
     // ============================================
     const GameStats = {
@@ -510,8 +682,8 @@
     // INPUT
     // ============================================
     const Input = {
-      keys: { left: false, right: false, up: false, down: false, jump: false, attack: false, shoot: false },
-      attackPressed: false, shootPressed: false,
+      keys: { left: false, right: false, up: false, down: false, jump: false, attack: false, shoot: false, eat: false, craft: false },
+      attackPressed: false, shootPressed: false, eatPressed: false, craftPressed: false,
       init() {
         window.addEventListener('keydown', e => this.handleKey(e, true));
         window.addEventListener('keyup', e => this.handleKey(e, false));
@@ -524,7 +696,7 @@
       handleKey(e, down) {
         const map = { 'ArrowLeft': 'left', 'KeyA': 'left', 'ArrowRight': 'right', 'KeyD': 'right',
           'ArrowUp': 'up', 'KeyW': 'up', 'ArrowDown': 'down', 'KeyS': 'down',
-          'Space': 'jump', 'KeyZ': 'attack', 'KeyX': 'shoot' };
+          'Space': 'jump', 'KeyZ': 'attack', 'KeyX': 'shoot', 'KeyE': 'eat', 'KeyC': 'craft' };
         if (map[e.code]) { e.preventDefault(); this.keys[map[e.code]] = down; }
       },
       setupTouch(id, key) {
@@ -546,6 +718,16 @@
       isShootJustPressed() {
         if (this.keys.shoot && !this.shootPressed) { this.shootPressed = true; return true; }
         if (!this.keys.shoot) this.shootPressed = false;
+        return false;
+      },
+      isEatJustPressed() {
+        if (this.keys.eat && !this.eatPressed) { this.eatPressed = true; return true; }
+        if (!this.keys.eat) this.eatPressed = false;
+        return false;
+      },
+      isCraftJustPressed() {
+        if (this.keys.craft && !this.craftPressed) { this.craftPressed = true; return true; }
+        if (!this.keys.craft) this.craftPressed = false;
         return false;
       }
     };
@@ -773,6 +955,8 @@
     const Background = {
       trees: [], rocks: [], bushes: [], puddles: [], ponds: [],
       flowers: [], mushrooms: [], logs: [], clouds: [], palmTrees: [],
+      // NEW Phase 9 - Environmental features
+      waterfalls: [], caves: [], cliffs: [], hollowLogs: [], treeRoots: [], rockFormations: [],
       
       init() {
         for (let i = 0; i < 8; i++) {
@@ -809,6 +993,31 @@
         this.ponds.push({ x: 1300, points: this.generatePondShape(110, 40) });
         this.ponds.push({ x: 2200, points: this.generatePondShape(80, 30) });
         this.ponds.push({ x: 3400, points: this.generatePondShape(95, 38) });
+        
+        // NEW Phase 9 - Environmental features
+        this.waterfalls.push({ x: 1000, height: 80 });
+        this.waterfalls.push({ x: 2500, height: 100 });
+        this.waterfalls.push({ x: 4200, height: 90 });
+        
+        this.caves.push({ x: 800, width: 60 });
+        this.caves.push({ x: 2100, width: 70 });
+        this.caves.push({ x: 3800, width: 65 });
+        
+        for (let i = 0; i < 5; i++) {
+          this.cliffs.push({ x: 600 + i * 800, width: 120, height: 40 });
+        }
+        
+        for (let i = 0; i < 10; i++) {
+          this.hollowLogs.push({ x: 350 + i * 450, length: 40 + Math.random() * 20 });
+        }
+        
+        for (let i = 0; i < 8; i++) {
+          this.treeRoots.push({ x: 400 + i * 600, size: 30 + Math.random() * 20 });
+        }
+        
+        for (let i = 0; i < 12; i++) {
+          this.rockFormations.push({ x: 500 + i * 400, rocks: 3 + Math.floor(Math.random() * 3) });
+        }
       },
 
       generatePondShape(width, height) {
@@ -880,6 +1089,14 @@
         this.drawGrass(ctx, camera, width, groundY);
         this.drawRocks(ctx, camera, groundY);
         this.drawBushes(ctx, camera, groundY);
+        
+        // NEW Phase 9 - Environmental features
+        this.drawWaterfalls(ctx, camera, groundY);
+        this.drawCaves(ctx, camera, groundY);
+        this.drawCliffs(ctx, camera, groundY);
+        this.drawHollowLogs(ctx, camera, groundY);
+        this.drawTreeRoots(ctx, camera, groundY);
+        this.drawRockFormations(ctx, camera, groundY);
       },
 
       drawClouds(ctx, camera, width) {
@@ -1321,6 +1538,158 @@
           ctx.arc(sx + 2, groundY - 7, 1, 0, Math.PI * 2);
           ctx.fill();
         }
+      },
+      
+      // NEW Phase 9 - Environmental Features Drawing Methods
+      drawWaterfalls(ctx, camera, groundY) {
+        const time = Date.now() / 1000;
+        for (const waterfall of this.waterfalls) {
+          const sx = waterfall.x - camera.x * 0.8;
+          if (sx < -80 || sx > CONFIG.CANVAS_WIDTH + 80) continue;
+          
+          // Rock cliff
+          ctx.fillStyle = '#5a6a7a';
+          ctx.fillRect(sx, groundY - waterfall.height, 15, waterfall.height);
+          ctx.fillStyle = '#7a8a9a';
+          ctx.fillRect(sx + 2, groundY - waterfall.height, 3, waterfall.height);
+          
+          // Animated water cascade
+          for (let i = 0; i < 8; i++) {
+            const dropY = ((time * 150 + i * 20) % waterfall.height);
+            ctx.fillStyle = 'rgba(140, 200, 250, 0.7)';
+            ctx.fillRect(sx + 6, groundY - waterfall.height + dropY, 4, 15);
+          }
+          
+          // Splash pool at bottom
+          ctx.fillStyle = '#4a8aba';
+          ctx.beginPath();
+          ctx.ellipse(sx + 8, groundY + 2, 20, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#8acaea';
+          ctx.beginPath();
+          ctx.ellipse(sx + 8, groundY, 12, 4, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+      
+      drawCaves(ctx, camera, groundY) {
+        for (const cave of this.caves) {
+          const sx = cave.x - camera.x * 0.9;
+          if (sx < -100 || sx > CONFIG.CANVAS_WIDTH + 100) continue;
+          
+          // Cave entrance (dark arch)
+          ctx.fillStyle = '#1a1a1a';
+          ctx.beginPath();
+          ctx.ellipse(sx + cave.width / 2, groundY - 5, cave.width / 2, cave.width / 3, 0, 0, Math.PI, true);
+          ctx.fill();
+          
+          // Rock surrounding
+          ctx.fillStyle = '#3a3a3a';
+          ctx.beginPath();
+          ctx.arc(sx, groundY - 10, cave.width / 3, 0, Math.PI);
+          ctx.arc(sx + cave.width, groundY - 10, cave.width / 3, 0, Math.PI);
+          ctx.fill();
+          
+          // Shadows and detail
+          ctx.fillStyle = '#2a2a2a';
+          ctx.fillRect(sx + cave.width * 0.3, groundY - cave.width * 0.2, cave.width * 0.4, cave.width * 0.2);
+        }
+      },
+      
+      drawCliffs(ctx, camera, groundY) {
+        for (const cliff of this.cliffs) {
+          const sx = cliff.x - camera.x * 0.85;
+          if (sx < -150 || sx > CONFIG.CANVAS_WIDTH + 150) continue;
+          
+          // Platform/ledge
+          ctx.fillStyle = '#6a5a4a';
+          ctx.fillRect(sx, groundY - cliff.height, cliff.width, 12);
+          ctx.fillStyle = '#5a4a3a';
+          ctx.fillRect(sx, groundY - cliff.height + 12, cliff.width, 4);
+          
+          // Support rocks
+          ctx.fillStyle = '#7a6a5a';
+          ctx.fillRect(sx + 10, groundY - cliff.height, 8, cliff.height);
+          ctx.fillRect(sx + cliff.width - 18, groundY - cliff.height, 8, cliff.height);
+          
+          // Grass on top
+          ctx.fillStyle = PALETTE.grassMid;
+          ctx.fillRect(sx, groundY - cliff.height, cliff.width, 2);
+        }
+      },
+      
+      drawHollowLogs(ctx, camera, groundY) {
+        for (const log of this.hollowLogs) {
+          const sx = log.x - camera.x * 0.9;
+          if (sx < -60 || sx > CONFIG.CANVAS_WIDTH + 60) continue;
+          
+          // Log body
+          ctx.fillStyle = PALETTE.logMid;
+          ctx.fillRect(sx, groundY - 15, log.length, 18);
+          ctx.fillStyle = PALETTE.logDark;
+          ctx.fillRect(sx, groundY - 15, log.length, 3);
+          ctx.fillRect(sx, groundY, log.length, 3);
+          
+          // Hollow opening
+          ctx.fillStyle = '#2a2a2a';
+          ctx.beginPath();
+          ctx.ellipse(sx + 5, groundY - 7, 8, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#3a3a3a';
+          ctx.beginPath();
+          ctx.ellipse(sx + 5, groundY - 7, 5, 7, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+      
+      drawTreeRoots(ctx, camera, groundY) {
+        for (const root of this.treeRoots) {
+          const sx = root.x - camera.x * 0.9;
+          if (sx < -50 || sx > CONFIG.CANVAS_WIDTH + 50) continue;
+          
+          // Large exposed roots
+          ctx.strokeStyle = PALETTE.trunkDark;
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(sx, groundY - 20);
+          ctx.quadraticCurveTo(sx - root.size * 0.3, groundY - 10, sx - root.size * 0.5, groundY + 5);
+          ctx.stroke();
+          
+          ctx.beginPath();
+          ctx.moveTo(sx, groundY - 20);
+          ctx.quadraticCurveTo(sx + root.size * 0.3, groundY - 10, sx + root.size * 0.5, groundY + 5);
+          ctx.stroke();
+          
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = PALETTE.trunkMid;
+          ctx.beginPath();
+          ctx.moveTo(sx - 10, groundY - 15);
+          ctx.quadraticCurveTo(sx - 15, groundY - 5, sx - 20, groundY + 5);
+          ctx.stroke();
+        }
+      },
+      
+      drawRockFormations(ctx, camera, groundY) {
+        for (const formation of this.rockFormations) {
+          const sx = formation.x - camera.x * 0.9;
+          if (sx < -60 || sx > CONFIG.CANVAS_WIDTH + 60) continue;
+          
+          // Multiple stacked rocks
+          for (let i = 0; i < formation.rocks; i++) {
+            const rockSize = 12 + i * 4;
+            const rockY = groundY - i * 10;
+            
+            ctx.fillStyle = PALETTE.rockMid;
+            ctx.beginPath();
+            ctx.ellipse(sx + i * 3, rockY - rockSize * 0.4, rockSize, rockSize * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = PALETTE.rockLight;
+            ctx.beginPath();
+            ctx.ellipse(sx + i * 3 - 3, rockY - rockSize * 0.6, rockSize * 0.4, rockSize * 0.3, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
       }
     };
 
@@ -1366,6 +1735,27 @@
         } else if (this.type === 'armor') {
           gradient.addColorStop(0, 'rgba(150, 200, 255, 0.6)');
           gradient.addColorStop(1, 'rgba(150, 200, 255, 0)');
+        } else if (this.type === 'egg') {
+          gradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
+          gradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
+        } else if (this.type === 'fossil') {
+          gradient.addColorStop(0, 'rgba(200, 180, 150, 0.6)');
+          gradient.addColorStop(1, 'rgba(200, 180, 150, 0)');
+        } else if (this.type === 'crystal') {
+          gradient.addColorStop(0, 'rgba(150, 100, 255, 0.9)');
+          gradient.addColorStop(1, 'rgba(150, 100, 255, 0)');
+        } else if (this.type === 'wood') {
+          gradient.addColorStop(0, 'rgba(139, 90, 43, 0.5)');
+          gradient.addColorStop(1, 'rgba(139, 90, 43, 0)');
+        } else if (this.type === 'stone') {
+          gradient.addColorStop(0, 'rgba(128, 128, 128, 0.5)');
+          gradient.addColorStop(1, 'rgba(128, 128, 128, 0)');
+        } else if (this.type === 'bones') {
+          gradient.addColorStop(0, 'rgba(240, 230, 210, 0.6)');
+          gradient.addColorStop(1, 'rgba(240, 230, 210, 0)');
+        } else if (this.type === 'metal') {
+          gradient.addColorStop(0, 'rgba(192, 192, 192, 0.7)');
+          gradient.addColorStop(1, 'rgba(192, 192, 192, 0)');
         }
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -1423,6 +1813,93 @@
           ctx.fillStyle = '#b0d0f0';
           ctx.fillRect(-1, -6, 2, 12);
           ctx.fillRect(-5, -1, 10, 2);
+        } else if (this.type === 'egg') {
+          // Dinosaur egg - glowing, speckled
+          ctx.fillStyle = '#e8c060';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 8, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#f8d080';
+          ctx.beginPath();
+          ctx.ellipse(-2, -2, 5, 7, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Speckles
+          ctx.fillStyle = '#a08050';
+          ctx.fillRect(-3, -4, 2, 2);
+          ctx.fillRect(2, -6, 2, 2);
+          ctx.fillRect(-1, 3, 2, 2);
+        } else if (this.type === 'fossil') {
+          // Fossil bone
+          ctx.fillStyle = '#b8a890';
+          ctx.fillRect(-8, -2, 16, 4);
+          ctx.beginPath();
+          ctx.arc(-8, 0, 3, 0, Math.PI * 2);
+          ctx.arc(8, 0, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#c8b8a0';
+          ctx.fillRect(-6, -1, 12, 2);
+        } else if (this.type === 'crystal') {
+          // Crystal shard - purple/blue
+          ctx.fillStyle = '#8060d0';
+          ctx.beginPath();
+          ctx.moveTo(0, -10);
+          ctx.lineTo(-6, 4);
+          ctx.lineTo(6, 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#a080f0';
+          ctx.beginPath();
+          ctx.moveTo(0, -10);
+          ctx.lineTo(-3, 0);
+          ctx.lineTo(3, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#c0a0ff';
+          ctx.fillRect(-1, -6, 2, 8);
+        } else if (this.type === 'wood') {
+          // Wood log piece
+          ctx.fillStyle = '#8b5a2b';
+          ctx.fillRect(-6, -4, 12, 8);
+          ctx.fillStyle = '#a0692f';
+          ctx.fillRect(-5, -3, 10, 6);
+          // Rings
+          ctx.strokeStyle = '#7a4a1b';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(-2, 0, 2, 0, Math.PI * 2);
+          ctx.arc(2, 0, 1.5, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (this.type === 'stone') {
+          // Stone chunk
+          ctx.fillStyle = '#808080';
+          ctx.fillRect(-6, -5, 12, 10);
+          ctx.fillStyle = '#a0a0a0';
+          ctx.fillRect(-5, -4, 8, 6);
+          ctx.fillStyle = '#606060';
+          ctx.fillRect(-3, -2, 6, 4);
+        } else if (this.type === 'bones') {
+          // Bone
+          ctx.fillStyle = '#f0e6d2';
+          ctx.fillRect(-8, -2, 16, 4);
+          ctx.beginPath();
+          ctx.arc(-8, 0, 3, 0, Math.PI * 2);
+          ctx.arc(8, 0, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(-6, -1, 12, 2);
+        } else if (this.type === 'metal') {
+          // Metal scrap
+          ctx.fillStyle = '#c0c0c0';
+          ctx.beginPath();
+          ctx.moveTo(0, -8);
+          ctx.lineTo(6, -2);
+          ctx.lineTo(4, 6);
+          ctx.lineTo(-4, 6);
+          ctx.lineTo(-6, -2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#e0e0e0';
+          ctx.fillRect(-3, -4, 6, 8);
         }
         
         ctx.scale(1/1.5, 1/1.5);
@@ -1970,6 +2447,29 @@
         this.pickups.push(new Pickup(2100, groundY - 10, 'acidgun'));
         this.pickups.push(new Pickup(2400, groundY - 10, 'armor'));
         this.pickups.push(new Pickup(2700, groundY - 10, 'rapidfire'));
+        
+        // NEW Phase 9 - Collectibles (rare spawns)
+        this.pickups.push(new Pickup(600, groundY - 10, 'egg'));
+        this.pickups.push(new Pickup(1400, groundY - 10, 'fossil'));
+        this.pickups.push(new Pickup(2000, groundY - 10, 'crystal'));
+        this.pickups.push(new Pickup(2800, groundY - 10, 'egg'));
+        this.pickups.push(new Pickup(3500, groundY - 10, 'fossil'));
+        this.pickups.push(new Pickup(4300, groundY - 10, 'crystal'));
+        
+        // Resources scattered around
+        for (let i = 0; i < 15; i++) {
+          const x = 400 + i * 320;
+          this.pickups.push(new Pickup(x, groundY - 10, 'wood'));
+        }
+        for (let i = 0; i < 12; i++) {
+          const x = 350 + i * 400;
+          this.pickups.push(new Pickup(x, groundY - 10, 'stone'));
+        }
+        // Metal is rare
+        this.pickups.push(new Pickup(1100, groundY - 10, 'metal'));
+        this.pickups.push(new Pickup(2300, groundY - 10, 'metal'));
+        this.pickups.push(new Pickup(3600, groundY - 10, 'metal'));
+        this.pickups.push(new Pickup(4800, groundY - 10, 'metal'));
       }
 
       update(dt, player, particles) {
@@ -1990,7 +2490,9 @@
           const result = this.enemies[i].update(dt, player);
           if (result.dropLoot && this.enemies[i].dead && !this.enemies[i].droppedLoot) {
             const groundY = CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT;
+            // Drop meat AND bones
             this.pickups.push(new Pickup(this.enemies[i].x + 15, groundY - 10, 'meat'));
+            this.pickups.push(new Pickup(this.enemies[i].x + 25, groundY - 10, 'bones'));
             this.enemies[i].droppedLoot = true;
             particles.createDeathCloud(this.enemies[i].x + 25, this.enemies[i].y + 20);
             GameStats.defeatEnemy();
@@ -2061,10 +2563,21 @@
         for (let i = pickups.length - 1; i >= 0; i--) {
           const p = pickups[i];
           if (this.checkCollision(playerBox, p.getHitbox())) {
-            if (p.type === 'meat') {
-              player.restoreHunger(CONFIG.MEAT_RESTORE);
+            // NEW Phase 9 - Items go to inventory, not auto-consumed
+            if (p.type === 'meat' || p.type === 'berries') {
+              Inventory.add(p.type, 1);
+              p.collected = true;
+            } else if (p.type === 'wood' || p.type === 'stone' || p.type === 'bones' || p.type === 'metal') {
+              Inventory.add(p.type, p.type === 'wood' ? CONFIG.WOOD_PER_TREE : 
+                                    p.type === 'stone' ? CONFIG.STONE_PER_ROCK :
+                                    p.type === 'bones' ? CONFIG.BONES_PER_ENEMY : 1);
+              p.collected = true;
+            } else if (p.type === 'egg' || p.type === 'fossil' || p.type === 'crystal') {
+              Inventory.add(p.type === 'egg' ? 'eggs' : 
+                           p.type === 'fossil' ? 'fossils' : 'crystals', 1);
               p.collected = true;
             } else if (p.type === 'rapidfire') {
+              // Weapons still work the old way (can't craft in inventory)
               if (!player.weapon || player.weapon === 'rapidfire') {
                 player.weapon = 'rapidfire';
                 player.weaponAmmo += 40;
@@ -2092,10 +2605,11 @@
           }
         }
 
+        // Berries go to inventory now
         for (const bush of Background.bushes) {
           if (bush.collected) continue;
           if (Math.abs(player.x + player.width / 2 - bush.x) < 20 && player.y > CONFIG.CANVAS_HEIGHT - CONFIG.GROUND_HEIGHT - 60) {
-            player.restoreHunger(CONFIG.BERRY_RESTORE);
+            Inventory.add('berries', 1);
             bush.collected = true;
           }
         }
@@ -2158,6 +2672,58 @@
           ctx.fillStyle = '#fff';
           ctx.font = '6px "Press Start 2P", monospace';
           ctx.fillText('ARMOR', sx + 3, sy + bh + 12);
+        }
+        
+        // NEW Phase 9 - Inventory Display
+        const invX = 8, invY = 220;
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(invX, invY, 200, 45);
+        ctx.fillStyle = '#6a6';
+        ctx.font = '6px "Press Start 2P", monospace';
+        ctx.fillText('INVENTORY [E to eat]', invX + 3, invY + 8);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '5px "Press Start 2P", monospace';
+        let line = 1;
+        if (Inventory.items.berries > 0) {
+          ctx.fillText(`Berry:${Inventory.items.berries}`, invX + 3, invY + 8 + line * 8);
+          line++;
+        }
+        if (Inventory.items.meat > 0) {
+          ctx.fillText(`Meat:${Inventory.items.meat}`, invX + 3, invY + 8 + line * 8);
+          line++;
+        }
+        
+        // Resources
+        ctx.fillStyle = '#da6';
+        let resLine = 1;
+        if (Inventory.items.wood > 0) {
+          ctx.fillText(`Wood:${Inventory.items.wood}`, invX + 70, invY + 8 + resLine * 8);
+          resLine++;
+        }
+        if (Inventory.items.stone > 0) {
+          ctx.fillText(`Stone:${Inventory.items.stone}`, invX + 70, invY + 8 + resLine * 8);
+          resLine++;
+        }
+        if (Inventory.items.bones > 0) {
+          ctx.fillText(`Bone:${Inventory.items.bones}`, invX + 70, invY + 8 + resLine * 8);
+          resLine++;
+        }
+        if (Inventory.items.metal > 0) {
+          ctx.fillText(`Metal:${Inventory.items.metal}`, invX + 70, invY + 8 + resLine * 8);
+          resLine++;
+        }
+        
+        // Collectibles
+        ctx.fillStyle = '#b6f';
+        let colLine = 1;
+        const totalCollectibles = Inventory.collectibles.eggs + Inventory.collectibles.fossils + Inventory.collectibles.crystals;
+        if (totalCollectibles > 0) {
+          ctx.fillText(`Egg:${Inventory.collectibles.eggs}`, invX + 135, invY + 8 + colLine * 8);
+          colLine++;
+          ctx.fillText(`Fos:${Inventory.collectibles.fossils}`, invX + 135, invY + 8 + colLine * 8);
+          colLine++;
+          ctx.fillText(`Cry:${Inventory.collectibles.crystals}`, invX + 135, invY + 8 + colLine * 8);
         }
       },
 
@@ -2252,6 +2818,8 @@
         Background.bushes.forEach(b => b.collected = false);
         Background.puddles.forEach(p => { p.collected = false; p.respawnTimer = 0; });
         GameStats.reset();
+        Inventory.reset(); // NEW Phase 9 - Reset inventory
+        CraftingUI.isOpen = false; // Close crafting menu
         DayNight.time = 0.35;
         Birds.init(); // Reset birds
         this.player = new Player(100, 100);
@@ -2275,6 +2843,35 @@
           if (Input.isAttackJustPressed() || Input.keys.jump) this.restart();
           return;
         }
+        
+        // NEW Phase 9 - Crafting menu toggle
+        if (Input.isCraftJustPressed()) {
+          CraftingUI.toggle();
+        }
+        
+        // NEW Phase 9 - Eating from inventory
+        if (Input.isEatJustPressed() && !CraftingUI.isOpen) {
+          if (Inventory.has('berries', 1)) {
+            Inventory.remove('berries', 1);
+            this.player.restoreHunger(CONFIG.BERRY_RESTORE);
+          } else if (Inventory.has('meat', 1)) {
+            Inventory.remove('meat', 1);
+            this.player.restoreHunger(CONFIG.MEAT_RESTORE);
+          }
+        }
+        
+        // Crafting while menu is open
+        if (CraftingUI.isOpen && Input.isAttackJustPressed()) {
+          // Try to craft the first available recipe
+          const recipes = ['boneclub', 'rapidfire', 'acidgun', 'healthpotion', 'armor'];
+          for (const recipe of recipes) {
+            if (CraftingUI.canCraft(recipe)) {
+              CraftingUI.craft(recipe, this.player);
+              break; // Craft one at a time
+            }
+          }
+        }
+        
         DayNight.update(dt);
         Birds.update(dt); // Update birds
         this.player.update(dt);
@@ -2297,6 +2894,8 @@
         this.particles.draw(ctx, this.camera);
         this.player.draw(ctx, this.camera);
         UI.draw(ctx, this.player, this.canvas.width);
+        // NEW Phase 9 - Crafting UI
+        CraftingUI.draw(ctx, this.canvas.width, this.canvas.height);
         if (this.gameState === 'gameover') UI.drawGameOver(ctx, this.canvas.width, this.canvas.height);
       }
     }
