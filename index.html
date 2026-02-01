@@ -65,14 +65,14 @@
 <body>
   <div id="game-container">
     <canvas id="game-canvas"></canvas>
-    <div id="keyboard-hint">ARROWS: Move â€¢ SPACE: Jump â€¢ Z: Attack â€¢ X: Shoot</div>
+    <div id="keyboard-hint">ARROWS: Move | SPACE: Jump | Z: Attack | X: Shoot | C: Craft</div>
   </div>
   <div id="controls">
     <div id="dpad">
-      <button class="dpad-btn" id="dpad-up">â–²</button>
-      <button class="dpad-btn" id="dpad-down">â–¼</button>
-      <button class="dpad-btn" id="dpad-left">â—€</button>
-      <button class="dpad-btn" id="dpad-right">â–¶</button>
+      <button class="dpad-btn" id="dpad-up">UP</button>
+      <button class="dpad-btn" id="dpad-down">DN</button>
+      <button class="dpad-btn" id="dpad-left">LT</button>
+      <button class="dpad-btn" id="dpad-right">RT</button>
     </div>
     <div id="action-buttons">
       <button class="action-btn" id="btn-shoot">GUN</button>
@@ -477,7 +477,7 @@
         ctx.fillRect(0, 0, width, height);
         
         // Crafting window
-        const boxW = 360, boxH = 200;
+        const boxW = 360, boxH = 230;
         const boxX = (width - boxW) / 2;
         const boxY = (height - boxH) / 2;
         
@@ -489,18 +489,19 @@
         
         // Title
         ctx.fillStyle = '#fff';
-        ctx.font = '10px "Press Start 2P", monospace';
-        ctx.fillText('CRAFTING MENU', boxX + 10, boxY + 20);
-        ctx.font = '6px "Press Start 2P", monospace';
-        ctx.fillText('Up/Down to select, Z to craft, C to close', boxX + 10, boxY + 32);
+        ctx.font = '12px "Press Start 2P", monospace';
+        ctx.fillText('CRAFTING MENU', boxX + 10, boxY + 22);
+        ctx.font = '7px "Press Start 2P", monospace';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText('Up/Down: Select | Z: Craft | C: Close', boxX + 10, boxY + 36);
 
         // Recipes
         const recipes = [
           { name: 'Bone Club', key: 'boneclub', y: 50 },
-          { name: 'Rapid Fire', key: 'rapidfire', y: 75 },
-          { name: 'Acid Gun', key: 'acidgun', y: 100 },
-          { name: 'Health Pot', key: 'healthpotion', y: 125 },
-          { name: 'Armor', key: 'armor', y: 150 }
+          { name: 'Rapid Fire', key: 'rapidfire', y: 78 },
+          { name: 'Acid Gun', key: 'acidgun', y: 106 },
+          { name: 'Health Pot', key: 'healthpotion', y: 134 },
+          { name: 'Armor', key: 'armor', y: 162 }
         ];
 
         for (let i = 0; i < recipes.length; i++) {
@@ -514,22 +515,22 @@
           } else {
             ctx.fillStyle = canCraft ? '#4a4' : '#844';
           }
-          ctx.fillRect(boxX + 10, boxY + r.y, boxW - 20, 18);
+          ctx.fillRect(boxX + 10, boxY + r.y, boxW - 20, 22);
 
           // Selection border/highlight
           if (isSelected) {
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
-            ctx.strokeRect(boxX + 10, boxY + r.y, boxW - 20, 18);
+            ctx.strokeRect(boxX + 10, boxY + r.y, boxW - 20, 22);
           }
 
-          // Selection arrow
+          // Selection arrow and recipe name
           ctx.fillStyle = '#fff';
-          ctx.font = '7px "Press Start 2P", monospace';
+          ctx.font = '8px "Press Start 2P", monospace';
           if (isSelected) {
-            ctx.fillText('>', boxX + 12, boxY + r.y + 12);
+            ctx.fillText('>', boxX + 14, boxY + r.y + 13);
           }
-          ctx.fillText(r.name, boxX + 25, boxY + r.y + 12);
+          ctx.fillText(r.name, boxX + 28, boxY + r.y + 13);
 
           // Show recipe requirements
           const recipe = CONFIG.RECIPES[r.key];
@@ -537,14 +538,15 @@
           for (let item in recipe) {
             reqText += `${item}:${recipe[item]} `;
           }
-          ctx.font = '5px "Press Start 2P", monospace';
+          ctx.font = '6px "Press Start 2P", monospace';
           ctx.fillStyle = '#ccc';
-          ctx.fillText(reqText, boxX + 110, boxY + r.y + 12);
+          ctx.fillText(reqText, boxX + 120, boxY + r.y + 13);
 
           // Show craft prompt only for selected item
           if (isSelected && canCraft) {
             ctx.fillStyle = '#afa';
-            ctx.fillText('[Z to craft]', boxX + boxW - 90, boxY + r.y + 12);
+            ctx.font = '7px "Press Start 2P", monospace';
+            ctx.fillText('[Z]', boxX + boxW - 45, boxY + r.y + 13);
           }
         }
       }
@@ -715,7 +717,7 @@
     // ============================================
     const Input = {
       keys: { left: false, right: false, up: false, down: false, jump: false, attack: false, shoot: false, eat: false, craft: false },
-      attackPressed: false, shootPressed: false, eatPressed: false, craftPressed: false,
+      attackPressed: false, shootPressed: false, eatPressed: false, craftPressed: false, upPressed: false, downPressed: false,
       init() {
         window.addEventListener('keydown', e => this.handleKey(e, true));
         window.addEventListener('keyup', e => this.handleKey(e, false));
@@ -2717,56 +2719,58 @@
         }
         
         // NEW Phase 9 - Inventory Display
-        const invX = 8, invY = 220;
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-        ctx.fillRect(invX, invY, 200, 45);
-        ctx.fillStyle = '#6a6';
+        const invX = 8, invY = 200;
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillRect(invX, invY, 250, 65);
+        ctx.strokeStyle = '#4a6a4a';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(invX, invY, 250, 65);
+
+        // Header
+        ctx.fillStyle = '#6c6';
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.fillText('INVENTORY', invX + 5, invY + 12);
+        ctx.fillStyle = '#aaa';
         ctx.font = '6px "Press Start 2P", monospace';
-        ctx.fillText('INVENTORY [E to eat]', invX + 3, invY + 8);
-        
+        ctx.fillText('[E] Eat  [C] Craft', invX + 110, invY + 12);
+
+        // Food section
+        ctx.fillStyle = '#8f8';
+        ctx.font = '7px "Press Start 2P", monospace';
+        let foodY = invY + 26;
+        ctx.fillText('Food:', invX + 5, foodY);
         ctx.fillStyle = '#fff';
-        ctx.font = '5px "Press Start 2P", monospace';
-        let line = 1;
-        if (Inventory.items.berries > 0) {
-          ctx.fillText(`Berry:${Inventory.items.berries}`, invX + 3, invY + 8 + line * 8);
-          line++;
-        }
-        if (Inventory.items.meat > 0) {
-          ctx.fillText(`Meat:${Inventory.items.meat}`, invX + 3, invY + 8 + line * 8);
-          line++;
-        }
-        
-        // Resources
+        let foodText = '';
+        if (Inventory.items.berries > 0) foodText += `Berries:${Inventory.items.berries} `;
+        if (Inventory.items.meat > 0) foodText += `Meat:${Inventory.items.meat}`;
+        if (foodText === '') foodText = 'None';
+        ctx.fillText(foodText, invX + 50, foodY);
+
+        // Resources section
         ctx.fillStyle = '#da6';
-        let resLine = 1;
-        if (Inventory.items.wood > 0) {
-          ctx.fillText(`Wood:${Inventory.items.wood}`, invX + 70, invY + 8 + resLine * 8);
-          resLine++;
-        }
-        if (Inventory.items.stone > 0) {
-          ctx.fillText(`Stone:${Inventory.items.stone}`, invX + 70, invY + 8 + resLine * 8);
-          resLine++;
-        }
-        if (Inventory.items.bones > 0) {
-          ctx.fillText(`Bone:${Inventory.items.bones}`, invX + 70, invY + 8 + resLine * 8);
-          resLine++;
-        }
-        if (Inventory.items.metal > 0) {
-          ctx.fillText(`Metal:${Inventory.items.metal}`, invX + 70, invY + 8 + resLine * 8);
-          resLine++;
-        }
-        
-        // Collectibles
-        ctx.fillStyle = '#b6f';
-        let colLine = 1;
+        let resY = invY + 40;
+        ctx.fillText('Res:', invX + 5, resY);
+        ctx.fillStyle = '#fff';
+        let resText = '';
+        if (Inventory.items.wood > 0) resText += `Wood:${Inventory.items.wood} `;
+        if (Inventory.items.stone > 0) resText += `Stone:${Inventory.items.stone} `;
+        if (Inventory.items.bones > 0) resText += `Bones:${Inventory.items.bones} `;
+        if (Inventory.items.metal > 0) resText += `Metal:${Inventory.items.metal}`;
+        if (resText === '') resText = 'None';
+        ctx.fillText(resText, invX + 50, resY);
+
+        // Collectibles section
         const totalCollectibles = Inventory.collectibles.eggs + Inventory.collectibles.fossils + Inventory.collectibles.crystals;
-        if (totalCollectibles > 0) {
-          ctx.fillText(`Egg:${Inventory.collectibles.eggs}`, invX + 135, invY + 8 + colLine * 8);
-          colLine++;
-          ctx.fillText(`Fos:${Inventory.collectibles.fossils}`, invX + 135, invY + 8 + colLine * 8);
-          colLine++;
-          ctx.fillText(`Cry:${Inventory.collectibles.crystals}`, invX + 135, invY + 8 + colLine * 8);
-        }
+        ctx.fillStyle = '#b6f';
+        let colY = invY + 54;
+        ctx.fillText('Rare:', invX + 5, colY);
+        ctx.fillStyle = '#fff';
+        let colText = '';
+        if (Inventory.collectibles.eggs > 0) colText += `Eggs:${Inventory.collectibles.eggs} `;
+        if (Inventory.collectibles.fossils > 0) colText += `Fossils:${Inventory.collectibles.fossils} `;
+        if (Inventory.collectibles.crystals > 0) colText += `Crystals:${Inventory.collectibles.crystals}`;
+        if (colText === '') colText = 'None';
+        ctx.fillText(colText, invX + 50, colY);
       },
 
       drawBar(ctx, x, y, w, h, value, max, colorHigh, colorLow, label, warning = false) {
